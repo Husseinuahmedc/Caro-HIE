@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useId } from "react";
 
 import {
   CODE_LANGUAGE_OPTIONS,
@@ -32,33 +32,31 @@ function HighlightedLinesField({
 }) {
   const id = useId();
   const serialized = value.join(", ");
-  const [draft, setDraft] = useState(serialized);
 
-  useEffect(() => setDraft(serialized), [serialized]);
-
-  function commit() {
+  function commit(input: HTMLInputElement) {
     const lines = [...new Set(
-      draft
+      input.value
         .split(/[,،\s]+/)
         .map(Number)
         .filter((line) => Number.isInteger(line) && line > 0 && line <= 999),
     )].sort((left, right) => left - right);
     onChange(lines);
-    setDraft(lines.join(", "));
+    input.value = lines.join(", ");
   }
 
   return (
     <div>
       <Label htmlFor={id}>تمييز الأسطر</Label>
       <Input
+        key={serialized}
         id={id}
         dir="ltr"
-        value={draft}
+        defaultValue={serialized}
         placeholder="2, 4, 7"
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={commit}
+        onBlur={(event) => commit(event.currentTarget)}
         onKeyDown={(event) => {
           if (event.key === "Enter") event.currentTarget.blur();
+          if (event.key === "Escape") event.currentTarget.value = serialized;
         }}
       />
       <p className="mt-1.5 text-[10px] text-stone-400">أرقام مفصولة بفواصل، مثال: 2, 4, 7</p>

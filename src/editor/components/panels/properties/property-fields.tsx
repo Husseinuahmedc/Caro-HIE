@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { Input, Label, Select, Textarea } from "@/shared/ui";
 
@@ -138,13 +138,11 @@ export function ColorField({
 }) {
   const pickerId = useId();
   const textId = useId();
-  const [draft, setDraft] = useState(value);
 
-  useEffect(() => setDraft(value), [value]);
-
-  function commit() {
+  function commit(input: HTMLInputElement) {
+    const draft = input.value.trim();
     if (/^#[0-9a-f]{6}$/i.test(draft)) onChange(draft);
-    else setDraft(value);
+    else input.value = value;
   }
 
   return (
@@ -157,21 +155,18 @@ export function ColorField({
           aria-label={`${label} — منتقي اللون`}
           className="w-12 shrink-0 px-1.5"
           value={value}
-          onChange={(event) => {
-            setDraft(event.target.value);
-            onChange(event.target.value);
-          }}
+          onChange={(event) => onChange(event.target.value)}
         />
         <Input
+          key={value}
           id={textId}
-          value={draft}
+          defaultValue={value}
           maxLength={7}
           spellCheck={false}
-          onChange={(event) => setDraft(event.target.value)}
-          onBlur={commit}
+          onBlur={(event) => commit(event.currentTarget)}
           onKeyDown={(event) => {
             if (event.key === "Enter") event.currentTarget.blur();
-            if (event.key === "Escape") setDraft(value);
+            if (event.key === "Escape") event.currentTarget.value = value;
           }}
         />
       </div>
