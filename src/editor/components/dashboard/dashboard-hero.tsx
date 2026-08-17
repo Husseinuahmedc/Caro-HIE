@@ -1,64 +1,91 @@
-import { ArrowDownLeft, Check, Download, Layers3 } from "lucide-react";
-
-import { Badge, Button } from "@/shared/ui";
+import { ArrowLeft } from "lucide-react";
 
 const TRUST_POINTS = ["حتى 9 شرائح", "حفظ تلقائي", "JSON · SVG · PNG · PDF"];
 
 export function DashboardHero({ hasProjects }: { hasProjects: boolean }) {
   return (
-    <section className="grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
-      <div>
-        <Badge className="mb-5 border border-brand-accent/60 bg-brand-accent-soft text-primary">محرر كاروسيل عربي</Badge>
-        <h1 className="max-w-4xl text-4xl font-black leading-[1.18] tracking-tight text-primary sm:text-6xl lg:text-7xl">
-          صمّم فكرتك، رتّبها، وصدّرها كاروسيل جاهز للنشر.
-        </h1>
-        <p className="mt-6 max-w-2xl text-base leading-8 text-brand-muted sm:text-lg">
-          ابدأ من قالب واضح، عدّل النصوص والطبقات بصرياً، واحفظ مشاريعك داخل المتصفح من دون حساب.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="default" variant="accent" className="h-12 px-6">
-            <a href="#new-project">ابدأ مشروعاً <ArrowDownLeft /></a>
-          </Button>
-          {hasProjects ? <Button asChild size="default" variant="secondary" className="h-12 px-6"><a href="#projects">افتح مشاريعك</a></Button> : null}
+    <section className="grid items-center gap-10 py-14 sm:py-20 lg:min-h-[650px] lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-14">
+      <div className="max-w-3xl">
+        <div className="mb-6 flex items-center gap-3 text-xs font-black text-primary sm:text-sm">
+          <span className="h-0.5 w-11 bg-brand-accent" />
+          <span>محرر كاروسيل عربي، مصنوع للمحتوى العربي</span>
         </div>
-        <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-brand-muted">
-          {TRUST_POINTS.map((point) => <li key={point} className="flex items-center gap-1.5"><Check className="size-4 text-brand-accent-strong" />{point}</li>)}
+
+        <h1 className="text-5xl font-black leading-[1.16] tracking-[-0.04em] text-primary sm:text-6xl lg:text-7xl">
+          الفكرة أولاً.
+          <br />
+          ثم تتحول إلى
+          <br />
+          سلسلة تُقرأ.
+        </h1>
+
+        <p className="mt-7 max-w-2xl text-base leading-8 text-brand-muted sm:text-lg">
+          ابدأ من قالب واضح، اكتب المعنى قبل الزينة، ثم رتّب الشرائح والطبقات وصدّرها جاهزة للنشر.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-5">
+          <a
+            href="#new-project"
+            className="inline-flex h-12 items-center gap-2 rounded-lg bg-brand-accent px-6 text-sm font-black text-primary transition hover:-translate-y-0.5 hover:bg-[#22e3ec]"
+          >
+            ابدأ مشروعاً
+            <ArrowLeft className="size-4" />
+          </a>
+          {hasProjects ? (
+            <a className="text-sm font-black text-primary underline decoration-brand-accent decoration-2 underline-offset-8" href="#projects">
+              افتح مشاريعك
+            </a>
+          ) : (
+            <a className="text-sm font-black text-primary underline decoration-brand-accent decoration-2 underline-offset-8" href="#new-project">
+              شاهد كيف يعمل <span className="me-1 text-brand-accent-strong">02</span>
+            </a>
+          )}
+        </div>
+
+        <ul className="mt-9 flex flex-wrap items-center gap-y-3 text-xs font-medium text-brand-muted">
+          {TRUST_POINTS.map((point, index) => (
+            <li key={point} className="flex items-center">
+              {index > 0 ? <span className="mx-4 h-4 w-px bg-brand-border" /> : null}
+              {point}
+            </li>
+          ))}
         </ul>
       </div>
 
-      <div className="relative mx-auto w-full max-w-xl" aria-label="مراحل إنشاء الكاروسيل">
-        <div className="absolute -inset-5 -z-10 rounded-[2rem] bg-brand-accent-soft/70" />
-        <div className="rounded-[1.75rem] border border-primary/15 bg-surface-strong p-4 shadow-[0_28px_90px_rgba(25,69,75,0.13)] sm:p-6">
-          <div className="mb-5 flex items-center justify-between border-b border-brand-border pb-4">
-            <div><strong className="block text-sm text-primary">مسار عمل واضح</strong><span className="text-xs text-brand-muted">من الفكرة إلى الملف النهائي</span></div>
-            <span className="grid size-10 place-items-center rounded-xl bg-primary text-white"><Layers3 className="size-5" /></span>
-          </div>
-          <div className="grid grid-cols-3 gap-3" dir="rtl">
-            <Stage number="01" title="اختر" description="قالب ومقاس" />
-            <Stage number="02" title="عدّل" description="نص وطبقات" active />
-            <Stage number="03" title="صدّر" description="أربع صيغ" icon={<Download className="size-4" />} />
-          </div>
-          <div className="mt-4 grid grid-cols-[0.72fr_1fr_0.82fr] items-end gap-3 rounded-2xl bg-[#ebe8e1] p-4">
-            <SlideMock className="aspect-square bg-[#dff7f7]" />
-            <SlideMock className="aspect-[4/5] bg-primary" active />
-            <SlideMock className="aspect-square bg-[#e7e2ff]" />
-          </div>
-        </div>
-      </div>
+      <CarouselMotif />
     </section>
   );
 }
 
-function Stage({ number, title, description, active = false, icon }: { number: string; title: string; description: string; active?: boolean; icon?: React.ReactNode }) {
+function CarouselMotif() {
   return (
-    <div className={`rounded-xl border p-3 ${active ? "border-brand-accent bg-brand-accent-soft" : "border-brand-border bg-surface"}`}>
-      <span className="flex items-center justify-between text-[10px] font-black text-brand-accent-strong"><span>{number}</span>{icon}</span>
-      <strong className="mt-4 block text-sm text-primary">{title}</strong>
-      <span className="mt-1 block text-[11px] text-brand-muted">{description}</span>
+    <div className="relative mx-auto h-[430px] w-full max-w-[540px] sm:h-[510px]" aria-label="الفكرة، الترتيب، ثم النشر">
+      <div className="absolute end-[32%] top-[16%] aspect-[4/5] w-[58%] -rotate-[7deg] rounded-xl border border-primary/15 bg-[#ddd6fa] shadow-[0_28px_70px_rgba(25,69,75,0.12)]">
+        <SlideLabel number="01" label="الفكرة" />
+      </div>
+      <div className="absolute end-[17%] top-[8%] aspect-[4/5] w-[58%] rotate-2 rounded-xl border border-primary/15 bg-primary text-white shadow-[0_28px_70px_rgba(25,69,75,0.14)]">
+        <SlideLabel number="02" label="الترتيب" inverse />
+      </div>
+      <div className="absolute end-0 top-[18%] aspect-[4/5] w-[58%] rotate-[8deg] rounded-xl border border-primary/15 bg-[#e8dbc2] shadow-[0_30px_80px_rgba(25,69,75,0.16)]">
+        <SlideLabel number="03" label="النشر" />
+      </div>
+      <div className="absolute start-0 top-0 grid size-24 place-items-center rounded-full bg-brand-accent text-center text-xs font-black leading-5 text-primary sm:size-28 sm:text-sm">
+        من الفكرة
+        <br />
+        إلى الملف
+      </div>
     </div>
   );
 }
 
-function SlideMock({ className, active = false }: { className: string; active?: boolean }) {
-  return <div className={`rounded-xl border p-3 shadow-sm ${active ? "border-brand-accent ring-2 ring-brand-accent/30" : "border-black/5"} ${className}`}><span className={`block h-2 w-2/3 rounded-full ${active ? "bg-white/80" : "bg-primary/65"}`} /><span className={`mt-2 block h-2 w-1/2 rounded-full ${active ? "bg-white/30" : "bg-primary/20"}`} /></div>;
+function SlideLabel({ number, label, inverse = false }: { number: string; label: string; inverse?: boolean }) {
+  return (
+    <div className="flex h-full flex-col justify-between p-7 sm:p-9">
+      <div>
+        <strong className="block text-5xl font-black sm:text-7xl">{number}</strong>
+        <span className={`mt-3 block h-0.5 w-20 ${inverse ? "bg-brand-accent" : "bg-[#d96d4a]"}`} />
+      </div>
+      <strong className={`text-lg font-black sm:text-xl ${inverse ? "text-white" : "text-primary"}`}>{label}</strong>
+    </div>
+  );
 }

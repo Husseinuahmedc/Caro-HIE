@@ -4,7 +4,7 @@ test("creates, edits, autosaves, and reopens a local project", async ({ page }) 
   const consoleErrors: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /صمّم فكرتك/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /الفكرة أولاً/ })).toBeVisible();
   await page.getByRole("button", { name: "إنشاء وفتح المحرر" }).click();
   await expect(page.locator("[data-canvas-frame]")).toBeVisible();
   await expect(page.getByText("كاروسيل عربي جديد", { exact: true })).toBeVisible();
