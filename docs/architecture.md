@@ -8,6 +8,7 @@
 4. Domain operations are immutable and have one canonical implementation.
 5. Editor, preview, SVG, PNG, and PDF follow the same document rendering rules.
 6. Assets are Blob records; documents contain stable IDs only.
+7. Layer arrays use back-to-front paint order: index `0` is the backmost layer and the last item is frontmost. The Layers panel displays this order in reverse so its first row is the frontmost layer.
 
 ## Dependency direction
 

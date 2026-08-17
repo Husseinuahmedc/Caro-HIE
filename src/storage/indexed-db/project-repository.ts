@@ -108,7 +108,8 @@ export async function restoreProject(projectId: string, recoveryRevision: number
     if (!current) throw new ProjectNotFoundError(projectId);
     const recovery = await database.recoveries.get(`${projectId}:${recoveryRevision}`);
     if (!recovery) throw new ProjectNotFoundError(`${projectId}:${recoveryRevision}`);
-    return saveProject({ ...recovery.document, revision: current.revision }, current.revision);
+    const recoveredDocument = migrateProjectDocument(recovery.document).document;
+    return saveProject({ ...recoveredDocument, revision: current.revision }, current.revision);
   } catch (error) {
     throw normalizeStorageError(error);
   }

@@ -5,6 +5,41 @@ import type { LayerOperationResult } from "./operation-result";
 export type LayerOrderDirection = "forward" | "backward";
 export type LayerOrderEdge = "front" | "back";
 
+export function moveLayerToPosition(
+  slide: SlideDocument,
+  layerId: string,
+  targetLayerId: string,
+): LayerOperationResult {
+  if (layerId === targetLayerId) return { slide, changed: false };
+
+  const context = findLayerContext(slide.layers, layerId);
+  const targetContext = findLayerContext(slide.layers, targetLayerId);
+  if (
+    !context ||
+    !targetContext ||
+    context.layer.locked ||
+    context.parentLocked ||
+    context.parent?.id !== targetContext.parent?.id
+  ) {
+    return { slide, changed: false };
+  }
+
+  let changed = false;
+  const layers = updateLayerCollection(slide.layers, layerId, (collection, index) => {
+    const targetIndex = collection.findIndex((layer) => layer.id === targetLayerId);
+    if (targetIndex < 0 || targetIndex === index) return collection;
+
+    const next = [...collection];
+    const [layer] = next.splice(index, 1);
+    if (!layer) return collection;
+    next.splice(targetIndex, 0, layer);
+    changed = true;
+    return next;
+  });
+
+  return changed ? { slide: { ...slide, layers }, changed: true } : { slide, changed: false };
+}
+
 export function reorderLayer(
   slide: SlideDocument,
   layerId: string,

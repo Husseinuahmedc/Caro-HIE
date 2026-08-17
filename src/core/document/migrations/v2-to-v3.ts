@@ -1,5 +1,4 @@
-import { parseProjectDocument } from "../schema";
-import { CURRENT_SCHEMA_VERSION, type ContentPlan, type ProjectDocument } from "../types";
+import type { ContentPlan } from "../types";
 import { arrayOrEmpty, recordOrEmpty, stringOr, type UnknownRecord } from "./migration-values";
 
 function seedContentPlan(document: UnknownRecord): ContentPlan {
@@ -34,12 +33,12 @@ function seedContentPlan(document: UnknownRecord): ContentPlan {
   };
 }
 
-export function migrateVersionTwoToThree(input: UnknownRecord): ProjectDocument {
-  return parseProjectDocument({
+export function migrateVersionTwoToThree(input: UnknownRecord): UnknownRecord {
+  return {
     ...input,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
+    schemaVersion: 3,
     templateId: stringOr(input.templateId, "custom"),
     brandKitId: typeof input.brandKitId === "string" ? input.brandKitId : null,
     contentPlan: seedContentPlan(input),
-  });
+  };
 }

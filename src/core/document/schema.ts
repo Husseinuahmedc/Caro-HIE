@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import {
+  CODE_LANGUAGES,
+  CODE_THEMES,
   CURRENT_SCHEMA_VERSION,
+  ICON_NAMES,
   MAX_SLIDES,
   type GroupLayer,
   type Layer,
@@ -42,7 +45,10 @@ export const textLayerSchema = layerBaseSchema.extend({
 export const codeLayerSchema = layerBaseSchema.extend({
   type: z.literal("code"),
   code: z.string(),
-  language: z.string().min(1),
+  language: z.enum(CODE_LANGUAGES),
+  theme: z.enum(CODE_THEMES),
+  showLineNumbers: z.boolean(),
+  highlightedLines: z.array(z.number().int().positive().max(999)),
   fontFamilyId: z.string().min(1),
   fontSize: finiteNumber.min(8).max(200),
   lineHeight: finiteNumber.min(0.7).max(3),
@@ -64,8 +70,10 @@ export const shapeLayerSchema = layerBaseSchema.extend({
 
 export const iconLayerSchema = layerBaseSchema.extend({
   type: z.literal("icon"),
-  icon: z.string().min(1),
+  icon: z.enum(ICON_NAMES),
   color: colorSchema,
+  fill: z.union([colorSchema, z.literal("none")]),
+  strokeWidth: finiteNumber.min(0.5).max(4),
   fontSize: finiteNumber.min(8).max(500),
 });
 

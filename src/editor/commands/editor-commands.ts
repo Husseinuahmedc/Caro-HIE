@@ -3,6 +3,7 @@ import {
   deleteLayer,
   duplicateLayer,
   groupLayers,
+  moveLayerToPosition,
   moveLayerToEdge,
   reorderLayer,
   toggleLayerLock,
@@ -61,4 +62,16 @@ export function toggleVisibility(session: DocumentSession, slideId: string, laye
 
 export function changeLayerOrder(session: DocumentSession, slideId: string, layerId: string, action: "forward" | "backward" | "front" | "back"): void {
   session.update((document) => applySlideOperation(document, slideId, (slide) => action === "front" || action === "back" ? moveLayerToEdge(slide, layerId, action) : reorderLayer(slide, layerId, action)), { label: "ترتيب العنصر", kind: "layer", affectedIds: [layerId] });
+}
+
+export function changeLayerPosition(
+  session: DocumentSession,
+  slideId: string,
+  layerId: string,
+  targetLayerId: string,
+): void {
+  session.update(
+    (document) => applySlideOperation(document, slideId, (slide) => moveLayerToPosition(slide, layerId, targetLayerId)),
+    { label: "إعادة ترتيب العنصر", kind: "layer", affectedIds: [layerId, targetLayerId] },
+  );
 }

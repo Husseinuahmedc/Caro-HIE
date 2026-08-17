@@ -26,7 +26,7 @@ export interface RecoveryRecord {
   projectId: string;
   revision: number;
   createdAt: string;
-  document: ProjectDocument;
+  document: ProjectDocument | unknown;
 }
 
 export interface StoredBrandKitRecord {

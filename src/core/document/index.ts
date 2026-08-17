@@ -1,4 +1,5 @@
 export * from "./accessors";
+export * from "./code-options";
 export * from "./copy-document";
 export * from "./defaults";
 export * from "./frame-presets";

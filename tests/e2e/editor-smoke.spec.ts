@@ -48,3 +48,31 @@ test("exports canonical JSON, SVG, PNG, and PDF files", async ({ page }) => {
     expect(size, `${format} export should not be empty`).toBeGreaterThan(200);
   }
 });
+
+test("reorders layers and exposes complete code and icon controls", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "إنشاء وفتح المحرر" }).click();
+  await expect(page.locator("[data-canvas-frame]")).toBeVisible();
+
+  await page.getByRole("button", { name: "إضافة شكل" }).click();
+  await page.getByRole("button", { name: "إضافة أيقونة" }).click();
+  await page.getByRole("button", { name: "طبقات" }).click();
+  await page.getByRole("button", { name: "شكل", exact: true }).click();
+  await page.getByRole("button", { name: "إلى المقدمة" }).click();
+
+  const renderedLayers = page.locator("[data-canvas-frame] [data-slide-id]").first().locator(":scope > [data-layer-id]");
+  await expect(renderedLayers.last()).toHaveAttribute("data-layer-type", "shape");
+
+  await page.getByRole("button", { name: "إضافة كود" }).click();
+  await expect(page.getByLabel("اللغة")).toBeVisible();
+  await expect(page.getByLabel("الثيم")).toBeVisible();
+  await page.getByLabel("اللغة").selectOption("tsx");
+  await page.getByLabel("تمييز الأسطر").fill("1, 3");
+  await page.getByLabel("تمييز الأسطر").blur();
+
+  await page.getByRole("button", { name: "إضافة أيقونة" }).click();
+  await expect(page.getByLabel("مكتبة الأيقونات")).toBeVisible();
+  await page.getByLabel("مكتبة الأيقونات").fill("قاعدة بيانات");
+  await page.getByRole("button", { name: "قاعدة بيانات" }).click();
+  await expect(page.locator("[data-canvas-frame] [data-layer-type='icon']").last().locator("svg ellipse")).toBeVisible();
+});

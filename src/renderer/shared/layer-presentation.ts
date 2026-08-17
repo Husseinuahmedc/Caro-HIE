@@ -1,4 +1,4 @@
-import type { CodeLayer, Layer, TextLayer } from "@/core/document";
+import type { CodeLayer, IconLayer, Layer, TextLayer } from "@/core/document";
 import { getEditorFontFamily } from "@/fonts";
 
 export function getLayerFrameStyle(layer: Layer): React.CSSProperties {
@@ -50,4 +50,8 @@ export function getCodeStyle(layer: CodeLayer): React.CSSProperties {
     background: layer.background,
     color: layer.color,
   };
+}
+
+export function getIconRenderSize(layer: IconLayer): number {
+  return Math.max(1, Math.min(layer.fontSize, layer.width, layer.height));
 }

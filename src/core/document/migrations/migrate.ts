@@ -3,6 +3,7 @@ import { CURRENT_SCHEMA_VERSION, type ProjectDocument } from "../types";
 import { isRecord } from "./migration-values";
 import { migrateVersionOneToTwo, type ExtractedLegacyAsset } from "./v1-to-v2";
 import { migrateVersionTwoToThree } from "./v2-to-v3";
+import { migrateVersionThreeToFour } from "./v3-to-v4";
 
 export interface DocumentMigrationResult {
   document: ProjectDocument;
@@ -26,9 +27,17 @@ export function migrateProjectDocument(input: unknown): DocumentMigrationResult 
     return { document: parseProjectDocument(input), extractedAssets: [], migratedFrom: version };
   }
 
+  if (version === 3) {
+    return {
+      document: migrateVersionThreeToFour(input),
+      extractedAssets: [],
+      migratedFrom: version,
+    };
+  }
+
   if (version === 2) {
     return {
-      document: migrateVersionTwoToThree(input),
+      document: migrateVersionThreeToFour(migrateVersionTwoToThree(input)),
       extractedAssets: [],
       migratedFrom: version,
     };
@@ -36,7 +45,7 @@ export function migrateProjectDocument(input: unknown): DocumentMigrationResult 
 
   const versionTwo = migrateVersionOneToTwo(input);
   return {
-    document: migrateVersionTwoToThree(versionTwo.document),
+    document: migrateVersionThreeToFour(migrateVersionTwoToThree(versionTwo.document)),
     extractedAssets: versionTwo.extractedAssets,
     migratedFrom: version,
   };

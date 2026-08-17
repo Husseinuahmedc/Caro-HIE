@@ -1,6 +1,10 @@
 import type { Layer, ProjectDocument, SlideDocument } from "@/core/document";
 import { getFramePreset } from "@/core/document";
 import { getEditorFontFamily } from "@/fonts";
+import { getCodeLayout, type CodeToken } from "../code/code-tokenizer";
+import { getCodeTheme, getCodeTokenColor } from "../code/code-themes";
+import { getIconDefinition } from "../icons/icon-catalog";
+import { getIconRenderSize } from "../shared/layer-presentation";
 
 export type ExportAssetSources = ReadonlyMap<string, string>;
 
@@ -10,6 +14,24 @@ function escapeXml(value: string): string {
 
 function layerTransform(layer: Layer): string {
   return `translate(${layer.x} ${layer.y}) rotate(${layer.rotation} ${layer.width / 2} ${layer.height / 2})`;
+}
+
+function serializeIconNodes(layer: Extract<Layer, { type: "icon" }>): string {
+  return getIconDefinition(layer.icon).nodes.map((node) => {
+    const attributes = Object.entries(node.attrs)
+      .map(([name, value]) => `${name}="${escapeXml(value)}"`)
+      .join(" ");
+    return `<${node.tag}${attributes ? ` ${attributes}` : ""}/>`;
+  }).join("");
+}
+
+function serializeCodeTokens(
+  layer: Extract<Layer, { type: "code" }>,
+  tokens: CodeToken[],
+): string {
+  return tokens.map((token) =>
+    `<tspan fill="${getCodeTokenColor(layer.theme, token.kind, layer.color)}">${escapeXml(token.content)}</tspan>`,
+  ).join("");
 }
 
 function wrapParagraph(paragraph: string, maximumCharacters: number): string[] {
@@ -41,15 +63,6 @@ function wrapText(content: string, maximumCharacters: number): string[] {
   return content.split("\n").flatMap((paragraph) => wrapParagraph(paragraph, maximumCharacters));
 }
 
-function wrapCode(content: string, maximumCharacters: number): string[] {
-  return content.split("\n").flatMap((line) => {
-    if (!line) return [""];
-    return Array.from({ length: Math.ceil(line.length / maximumCharacters) }, (_, index) =>
-      line.slice(index * maximumCharacters, (index + 1) * maximumCharacters),
-    );
-  });
-}
-
 function serializeLayer(layer: Layer, assets: ExportAssetSources): string {
   if (!layer.visible) return "";
   const common = `transform="${layerTransform(layer)}" opacity="${layer.opacity}"`;
@@ -66,7 +79,10 @@ function serializeLayer(layer: Layer, assets: ExportAssetSources): string {
     return `<rect ${common} width="${layer.width}" height="${layer.height}" rx="${layer.radius}" fill="${layer.fill}" stroke="${layer.stroke}" stroke-width="${layer.strokeWidth}"/>`;
   }
   if (layer.type === "icon") {
-    return `<text ${common} x="${layer.width / 2}" y="${layer.height / 2}" text-anchor="middle" dominant-baseline="central" fill="${layer.color}" font-size="${layer.fontSize}">${escapeXml(layer.icon)}</text>`;
+    const size = getIconRenderSize(layer);
+    const x = (layer.width - size) / 2;
+    const y = (layer.height - size) / 2;
+    return `<g ${common}><svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="${layer.fill}" stroke="${layer.color}" stroke-width="${layer.strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${serializeIconNodes(layer)}</svg></g>`;
   }
   if (layer.type === "image") {
     const source = layer.assetId ? assets.get(layer.assetId) : undefined;
@@ -77,12 +93,21 @@ function serializeLayer(layer: Layer, assets: ExportAssetSources): string {
   }
   if (layer.type === "code") {
     const clipId = `code-clip-${escapeXml(layer.id)}`;
-    const usableWidth = Math.max(layer.fontSize, layer.width - layer.padding * 2);
-    const maximumCharacters = Math.max(1, Math.floor(usableWidth / (layer.fontSize * 0.62)));
-    const lineAdvance = layer.fontSize * layer.lineHeight;
-    const lines = wrapCode(layer.code, maximumCharacters);
-    const text = lines.map((line, index) => `<tspan x="${layer.padding}" dy="${index === 0 ? 0 : lineAdvance}">${escapeXml(line)}</tspan>`).join("");
-    return `<g ${common}><defs><clipPath id="${clipId}"><rect width="${layer.width}" height="${layer.height}" rx="${layer.radius}"/></clipPath></defs><rect width="${layer.width}" height="${layer.height}" rx="${layer.radius}" fill="${layer.background}"/><text x="${layer.padding}" y="${layer.padding + layer.fontSize}" clip-path="url(#${clipId})" fill="${layer.color}" font-family="${escapeXml(getEditorFontFamily(layer.fontFamilyId))}" font-size="${layer.fontSize}" font-weight="500" direction="ltr" text-anchor="start" xml:space="preserve">${text}</text></g>`;
+    const layout = getCodeLayout(layer);
+    const theme = getCodeTheme(layer.theme);
+    const contentX = layer.padding + layout.gutterWidth;
+    const rows = layout.lines.map((line, index) => {
+      const rowTop = layer.padding + index * layout.lineAdvance;
+      const baseline = rowTop + layer.fontSize;
+      const highlight = line.highlighted
+        ? `<rect x="0" y="${rowTop}" width="${layer.width}" height="${layout.lineAdvance}" fill="${theme.highlight}"/>`
+        : "";
+      const lineNumber = layer.showLineNumbers && line.showLineNumber
+        ? `<text x="${contentX - layer.fontSize * 0.55}" y="${baseline}" fill="${theme.lineNumber}" text-anchor="end">${line.logicalLineNumber}</text>`
+        : "";
+      return `${highlight}${lineNumber}<text x="${contentX}" y="${baseline}" fill="${layer.color}" text-anchor="start">${serializeCodeTokens(layer, line.tokens)}</text>`;
+    }).join("");
+    return `<g ${common}><defs><clipPath id="${clipId}"><rect width="${layer.width}" height="${layer.height}" rx="${layer.radius}"/></clipPath></defs><rect width="${layer.width}" height="${layer.height}" rx="${layer.radius}" fill="${layer.background}"/><g clip-path="url(#${clipId})" font-family="${escapeXml(getEditorFontFamily(layer.fontFamilyId))}" font-size="${layer.fontSize}" font-weight="500" direction="ltr" xml:space="preserve">${rows}</g></g>`;
   }
   const maximumCharacters = Math.max(1, Math.floor(layer.width / (layer.fontSize * 0.55)));
   const lineAdvance = layer.fontSize * layer.lineHeight;

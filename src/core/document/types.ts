@@ -1,5 +1,58 @@
-export const CURRENT_SCHEMA_VERSION = 3 as const;
+export const CURRENT_SCHEMA_VERSION = 4 as const;
 export const MAX_SLIDES = 9 as const;
+
+export const CODE_LANGUAGES = [
+  "typescript",
+  "tsx",
+  "javascript",
+  "jsx",
+  "json",
+  "html",
+  "css",
+  "sql",
+  "python",
+  "bash",
+  "text",
+] as const;
+export const CODE_THEMES = ["midnight", "github-dark", "sand", "paper"] as const;
+export const ICON_NAMES = [
+  "sparkles",
+  "star",
+  "heart",
+  "circle-check",
+  "circle-x",
+  "circle-alert",
+  "info",
+  "lightbulb",
+  "zap",
+  "rocket",
+  "code-xml",
+  "terminal",
+  "database",
+  "server",
+  "shield-check",
+  "lock",
+  "user",
+  "users",
+  "mail",
+  "phone",
+  "globe",
+  "link",
+  "camera",
+  "image",
+  "play",
+  "download",
+  "upload",
+  "settings",
+  "search",
+  "house",
+  "calendar",
+  "clock",
+  "arrow-right",
+  "arrow-left",
+  "arrow-up",
+  "arrow-down",
+] as const;
 
 export type FramePresetId = "square" | "portrait" | "story";
 export type TextDirection = "rtl" | "ltr";
@@ -7,6 +60,9 @@ export type TextAlignment = "right" | "center" | "left";
 export type VerticalAlignment = "top" | "middle" | "bottom";
 export type ImageFit = "cover" | "contain";
 export type ShapeKind = "rect" | "circle" | "line";
+export type CodeLanguage = (typeof CODE_LANGUAGES)[number];
+export type CodeThemeId = (typeof CODE_THEMES)[number];
+export type IconName = (typeof ICON_NAMES)[number];
 
 export interface LayerBase {
   id: string;
@@ -39,7 +95,10 @@ export interface TextLayer extends LayerBase {
 export interface CodeLayer extends LayerBase {
   type: "code";
   code: string;
-  language: string;
+  language: CodeLanguage;
+  theme: CodeThemeId;
+  showLineNumbers: boolean;
+  highlightedLines: number[];
   fontFamilyId: string;
   fontSize: number;
   lineHeight: number;
@@ -61,8 +120,10 @@ export interface ShapeLayer extends LayerBase {
 
 export interface IconLayer extends LayerBase {
   type: "icon";
-  icon: string;
+  icon: IconName;
   color: string;
+  fill: string;
+  strokeWidth: number;
   fontSize: number;
 }
 
@@ -91,6 +152,7 @@ export interface SlideDocument {
   id: string;
   name: string;
   role?: string;
+  /** Back-to-front paint order: index 0 is the backmost layer. */
   layers: Layer[];
 }
 
