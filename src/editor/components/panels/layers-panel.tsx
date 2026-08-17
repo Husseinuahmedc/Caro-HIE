@@ -149,6 +149,7 @@ export function LayersPanel() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
   if (!slide) return null;
+  const slideId = slide.id;
   const entries = listLayersFrontToBack(slide.layers);
   const selectedLayerId = selectedIds.length === 1 ? selectedIds[0] : null;
 
@@ -159,13 +160,13 @@ export function LayersPanel() {
     const active = entries.find((entry) => entry.layer.id === activeId);
     const over = entries.find((entry) => entry.layer.id === overId);
     if (!active || !over || active.parentId !== over.parentId) return;
-    changeLayerPosition(session, slide.id, activeId, overId);
+    changeLayerPosition(session, slideId, activeId, overId);
     selectLayer(activeId);
   }
 
   function changeOrder(action: "forward" | "backward" | "front" | "back") {
     if (!selectedLayerId) return;
-    changeLayerOrder(session, slide.id, selectedLayerId, action);
+    changeLayerOrder(session, slideId, selectedLayerId, action);
   }
 
   return (
@@ -190,8 +191,8 @@ export function LayersPanel() {
                   entry={entry}
                   selected={selectedIds.includes(entry.layer.id)}
                   onSelect={(additive) => selectLayer(entry.layer.id, additive)}
-                  onToggleVisibility={() => toggleVisibility(session, slide.id, entry.layer.id)}
-                  onToggleLock={() => toggleLock(session, slide.id, entry.layer.id)}
+                  onToggleVisibility={() => toggleVisibility(session, slideId, entry.layer.id)}
+                  onToggleLock={() => toggleLock(session, slideId, entry.layer.id)}
                 />
               ))}
             </div>
