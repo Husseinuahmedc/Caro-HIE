@@ -63,7 +63,7 @@ export function NewProjectForm({ onCreate }: NewProjectFormProps) {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => setValue("templateId", template.id)}
-                className={`group flex min-h-48 flex-col border-brand-border p-5 text-right outline-none transition focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-brand-ring sm:border-s lg:min-h-52 ${selected ? "bg-primary text-white" : "bg-surface-strong text-primary hover:bg-surface"}`}
+                className={`group flex min-h-48 flex-col border-b border-brand-border p-5 text-right outline-none transition last:border-b-0 focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-brand-ring sm:border-s lg:min-h-52 lg:border-b-0 ${selected ? "bg-primary text-white" : "bg-surface-strong text-primary hover:bg-surface"}`}
               >
                 <span className={`text-xl font-black ${selected ? "text-brand-accent" : "text-[#d96d4a]"}`} dir="ltr">
                   {template.icon}
