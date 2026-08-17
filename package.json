@@ -1,0 +1,57 @@
+{
+  "name": "carousel-studio",
+  "version": "2.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Arabic-first, local-first fixed-frame carousel editor.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "dexie": "4.4.5",
+    "lucide-react": "1.31.0",
+    "next": "16.3.1",
+    "pdf-lib": "1.17.1",
+    "radix-ui": "1.6.7",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-hook-form": "7.85.0",
+    "tailwind-merge": "3.6.0",
+    "tw-animate-css": "1.4.0",
+    "zod": "4.4.3",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "4.1.10",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "fake-indexeddb": "6.2.5",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "packageManager": "pnpm@11.19.0"
+}
