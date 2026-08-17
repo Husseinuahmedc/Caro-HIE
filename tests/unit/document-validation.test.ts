@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { MAX_SLIDES, createBlankProjectDocument, createDocumentId, parseProjectDocument, validateProjectDocument } from "@/core/document";
+import {
+  CURRENT_SCHEMA_VERSION,
+  MAX_SLIDES,
+  createBlankProjectDocument,
+  createDocumentId,
+  parseProjectDocument,
+  validateProjectDocument,
+} from "@/core/document";
 
 describe("ProjectDocument validation", () => {
   it("accepts a valid current document", () => {
-    expect(parseProjectDocument(createBlankProjectDocument()).schemaVersion).toBe(3);
+    expect(parseProjectDocument(createBlankProjectDocument()).schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
   });
 
   it("rejects more than nine slides", () => {
