@@ -19,7 +19,7 @@
 
 ## التشغيل
 
-يتطلب Node.js 20.9 أو أحدث وpnpm 11.
+يتطلب Node.js 22.13 أو أحدث وpnpm 11.
 
 ```bash
 git clone <repository-url>
