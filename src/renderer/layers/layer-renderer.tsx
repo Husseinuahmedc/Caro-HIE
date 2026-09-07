@@ -11,19 +11,20 @@ import { getCodeStyle, getIconRenderSize, getLayerFrameStyle, getTextStyle } fro
 interface LayerRendererProps {
   layer: Layer;
   assetUrls: ReadonlyMap<string, string>;
+  editingLayerId?: string | null;
 }
 
-function LayerRendererComponent({ layer, assetUrls }: LayerRendererProps) {
+function LayerRendererComponent({ layer, assetUrls, editingLayerId }: LayerRendererProps) {
   const frameStyle = getLayerFrameStyle(layer);
   if (layer.type === "group") {
     return (
       <div data-layer-id={layer.id} data-layer-type="group" style={frameStyle}>
-        {layer.children.map((child) => <LayerRenderer key={child.id} layer={child} assetUrls={assetUrls} />)}
+        {layer.children.map((child) => <LayerRenderer key={child.id} layer={child} assetUrls={assetUrls} editingLayerId={editingLayerId} />)}
       </div>
     );
   }
   if (layer.type === "text") {
-    return <div data-layer-id={layer.id} data-layer-type="text" style={{ ...frameStyle, ...getTextStyle(layer) }}><span>{layer.content}</span></div>;
+    return <div data-layer-id={layer.id} data-layer-type="text" style={{ ...frameStyle, ...getTextStyle(layer), visibility: editingLayerId === layer.id ? "hidden" : undefined }}><span>{layer.content}</span></div>;
   }
   if (layer.type === "code") {
     const layout = getCodeLayout(layer);

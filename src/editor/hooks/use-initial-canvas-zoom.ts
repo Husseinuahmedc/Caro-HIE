@@ -23,10 +23,16 @@ export function calculateInitialCanvasZoom(viewportWidth: number, frameWidth: nu
   return Math.min(DEFAULT_ZOOM, Math.max(0.2, availableCanvasWidth / frameWidth));
 }
 
-export function useInitialCanvasZoom(documentId: string, frameWidth: number) {
+export function useInitialCanvasZoom(documentId: string, frameWidth: number, frameHeight = frameWidth) {
   const setZoom = useEditorUiStore((state) => state.setZoom);
 
   useEffect(() => {
-    setZoom(calculateInitialCanvasZoom(window.innerWidth, frameWidth));
-  }, [documentId, frameWidth, setZoom]);
+    const canvas = document.querySelector<HTMLElement>("[data-editor-canvas]");
+    if (!canvas) return;
+    const fit = () => setZoom(Math.min(1, Math.max(0.1, Math.min((canvas.clientWidth - 48) / frameWidth, (canvas.clientHeight - 136) / frameHeight))));
+    const observer = new ResizeObserver(fit);
+    observer.observe(canvas);
+    fit();
+    return () => observer.disconnect();
+  }, [documentId, frameWidth, frameHeight, setZoom]);
 }

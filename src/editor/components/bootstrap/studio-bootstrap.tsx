@@ -9,6 +9,7 @@ import { createProject, deleteProject, listProjects, loadProject, migrateLegacyL
 import { Button } from "@/shared/ui";
 import { ProjectDashboard } from "../dashboard/project-dashboard";
 import type { NewProjectValues } from "../dashboard/new-project-form";
+import { useEditorUiStore } from "@/editor/state/editor-ui-store";
 
 const EditorWorkspace = dynamic(
   () => import("../workspace/editor-workspace").then((module) => module.EditorWorkspace),
@@ -38,10 +39,12 @@ export function StudioBootstrap() {
   async function create(values: NewProjectValues) {
     const draft = createDocumentFromTemplate(values.templateId, { name: values.name, framePresetId: values.framePresetId });
     setActiveDocument(await createProject(draft));
+    useEditorUiStore.setState({ openPanel: "planner", selectedLayerIds: [], inspectorOpen: false, focusMode: false });
   }
 
   async function open(projectId: string) {
     setActiveDocument(await loadProject(projectId));
+    useEditorUiStore.setState({ openPanel: "properties", selectedLayerIds: [], inspectorOpen: false, focusMode: false });
   }
 
   async function remove(projectId: string) {
@@ -53,5 +56,5 @@ export function StudioBootstrap() {
   if (loading) return <div className="grid min-h-screen place-items-center bg-background"><div className="text-center"><span className="mx-auto mb-4 grid size-12 animate-pulse place-items-center rounded-2xl bg-primary text-xl font-black text-brand-accent">C</span><p className="text-sm font-semibold text-brand-muted">جارٍ فتح الاستوديو…</p></div></div>;
   if (error) return <div className="grid min-h-screen place-items-center bg-background p-6 text-center"><div><h1 className="text-2xl font-black text-primary">تعذر تشغيل Carousel Studio</h1><p className="mt-3 max-w-md text-brand-muted">{error}</p><Button className="mt-6" onClick={() => window.location.reload()}>إعادة المحاولة</Button></div></div>;
   if (activeDocument) return <EditorWorkspace document={activeDocument} onExit={async () => { await refreshProjects(); setActiveDocument(null); }} />;
-  return <ProjectDashboard projects={projects} onCreate={create} onOpen={open} onDelete={remove} />;
+  return <ProjectDashboard projects={projects} onCreate={create} onOpen={open} onDelete={remove} onImported={(document) => { useEditorUiStore.setState({openPanel: "properties", selectedLayerIds: [], inspectorOpen: false, focusMode: false}); setActiveDocument(document); }} />;
 }

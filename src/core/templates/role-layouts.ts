@@ -10,6 +10,7 @@ import {
 } from "../document";
 import type { RoleContentDefaults } from "./content-defaults";
 import type { TemplateLayoutId, TemplateRole } from "./template-definition";
+import { contrastRatio } from "../preflight/color-contrast";
 
 export interface LayoutContext {
   role: TemplateRole;
@@ -200,7 +201,7 @@ const ctaLayout: RoleLayoutFactory = ({ role, content, brand, frame }) => {
       fontFamilyId: brand.bodyFontId,
       fontSize: 44,
       fontWeight: 600,
-      color: brand.colors.accent,
+      color: contrastRatio(brand.colors.accent, brand.colors.background) >= 3 ? brand.colors.accent : brand.colors.text,
     }),
   ]);
 };

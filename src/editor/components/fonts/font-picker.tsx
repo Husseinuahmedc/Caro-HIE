@@ -32,7 +32,7 @@ export function FontPicker({ label, value, onChange, includeSystemMono = false }
       </Select>
       <div className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-stone-50 px-2.5 py-2">
         <span className="truncate text-xs text-brand-muted" style={{ fontFamily: currentFont.family }}>أبجد هوز — Aa 123</span>
-        <span className="inline-flex shrink-0 items-center gap-1 text-[10px] font-bold text-brand-accent-strong">
+        <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-brand-accent-strong">
           {currentFont.provider === "google" ? <Globe2 className="size-3.5" /> : <HardDrive className="size-3.5" />}
           {currentFont.provider === "google" ? "Google" : "مضمّن"}
         </span>

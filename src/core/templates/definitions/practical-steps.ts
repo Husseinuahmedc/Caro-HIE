@@ -3,7 +3,7 @@ import type { CarouselTemplate } from "../template-definition";
 export const practicalStepsTemplate: CarouselTemplate = {
   id: "practical-steps",
   name: "خطوات عملية",
-  description: "حوّل أي طريقة أو tutorial إلى خطوات سهلة المتابعة.",
+  description: "حوّل أي شرح إلى خطوات سهلة المتابعة.",
   icon: "①",
   roles: [
     { id: "cover", label: "الغلاف", hint: "النتيجة التي سيصل لها القارئ", layout: "cover" },

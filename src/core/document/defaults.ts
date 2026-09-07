@@ -19,7 +19,7 @@ export const DEFAULT_BRAND_SETTINGS: BrandSettings = {
     accent: "#c97950",
     accentSoft: "#e9b896",
     text: "#32231f",
-    muted: "#90786d",
+    muted: "#6e574c",
     codeBackground: "#2d211d",
     codeText: "#fff8ec",
     border: "#d9aa88",

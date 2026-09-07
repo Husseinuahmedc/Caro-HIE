@@ -38,7 +38,7 @@ export function IconPicker({ value, color, fill, strokeWidth, onChange }: IconPi
         placeholder="ابحث: كود، مستخدم، سهم..."
         onChange={(event) => setQuery(event.target.value)}
       />
-      <div className="mt-2 max-h-64 overflow-y-auto rounded-xl border border-brand-border bg-stone-50 p-2">
+      <div className="mt-2 max-h-64 overflow-y-auto rounded-lg border border-brand-border bg-stone-50 p-2">
         {filteredIcons.length ? (
           <div className="grid grid-cols-4 gap-1.5">
             {filteredIcons.map((icon) => {
@@ -50,7 +50,7 @@ export function IconPicker({ value, color, fill, strokeWidth, onChange }: IconPi
                   aria-label={icon.label}
                   aria-pressed={selected}
                   title={`${icon.label} — ${icon.category}`}
-                  className={`grid min-h-16 place-items-center gap-1 rounded-xl border p-1.5 text-[10px] font-semibold transition ${
+                  className={`grid min-h-16 place-items-center gap-1 rounded-lg border p-1.5 text-xs font-semibold transition ${
                     selected
                       ? "border-brand-accent bg-brand-accent-soft text-primary ring-2 ring-brand-accent/20"
                       : "border-transparent bg-white text-stone-600 hover:border-brand-border hover:text-primary"

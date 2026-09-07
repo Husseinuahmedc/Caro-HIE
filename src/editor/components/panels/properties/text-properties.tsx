@@ -32,8 +32,8 @@ export function TextProperties({ layer, patch }: { layer: TextLayer; patch: Patc
       </div>
       <div className="grid grid-cols-2 gap-3">
         <SelectField label="الاتجاه" value={layer.direction} onChange={(direction) => patch({ direction } as Partial<Layer>)}>
-          <option value="rtl">RTL</option>
-          <option value="ltr">LTR</option>
+          <option value="rtl">من اليمين</option>
+          <option value="ltr">من اليسار</option>
         </SelectField>
         <SelectField label="المحاذاة" value={layer.align} onChange={(align) => patch({ align } as Partial<Layer>)}>
           <option value="right">يمين</option>

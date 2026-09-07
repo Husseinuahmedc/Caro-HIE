@@ -10,11 +10,12 @@ interface SlideRendererProps {
   slide: SlideDocument;
   assetUrls?: ReadonlyMap<string, string>;
   className?: string;
+  editingLayerId?: string | null;
 }
 
 const EMPTY_ASSET_URLS: ReadonlyMap<string, string> = new Map();
 
-function SlideRendererComponent({ document, slide, assetUrls = EMPTY_ASSET_URLS, className }: SlideRendererProps) {
+function SlideRendererComponent({ document, slide, assetUrls = EMPTY_ASSET_URLS, className, editingLayerId }: SlideRendererProps) {
   const frame = getFramePreset(document.framePresetId);
   return (
     <div
@@ -30,7 +31,7 @@ function SlideRendererComponent({ document, slide, assetUrls = EMPTY_ASSET_URLS,
         color: document.brand.colors.text,
       }}
     >
-      {slide.layers.map((layer) => <LayerRenderer key={layer.id} layer={layer} assetUrls={assetUrls} />)}
+      {slide.layers.map((layer) => <LayerRenderer key={layer.id} layer={layer} assetUrls={assetUrls} editingLayerId={editingLayerId} />)}
     </div>
   );
 }
@@ -42,5 +43,6 @@ export const SlideRenderer = memo(
     previous.assetUrls === next.assetUrls &&
     previous.document.framePresetId === next.document.framePresetId &&
     previous.document.brand === next.document.brand &&
-    previous.className === next.className,
+    previous.className === next.className &&
+    previous.editingLayerId === next.editingLayerId,
 );

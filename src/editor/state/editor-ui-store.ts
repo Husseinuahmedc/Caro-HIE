@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 import type { SnapGuide } from "@/core/engine";
 
-export type EditorPanel = "layers" | "properties" | "planner" | "brand" | "preflight";
+export type EditorPanel = "layers" | "properties" | "planner" | "brand" | "preflight" | "help" | "navigation";
 export type EditorTool = "select" | "text" | "shape" | "image";
 
 interface EditorUiState {
@@ -15,6 +15,8 @@ interface EditorUiState {
   focusMode: boolean;
   showSafeArea: boolean;
   snapGuides: SnapGuide[];
+  inspectorOpen: boolean;
+  setInspectorOpen: (open: boolean) => void;
   setActiveSlide: (slideId: string) => void;
   selectLayer: (layerId: string, additive?: boolean) => void;
   clearSelection: () => void;
@@ -35,7 +37,9 @@ export const useEditorUiStore = create<EditorUiState>((set) => ({
   tool: "select",
   hoveredLayerId: null,
   focusMode: false,
-  showSafeArea: true,
+  showSafeArea: false,
+  inspectorOpen: false,
+  setInspectorOpen: (inspectorOpen) => set({ inspectorOpen }),
   snapGuides: [],
   setActiveSlide: (slideId) => set({ activeSlideId: slideId, selectedLayerIds: [] }),
   selectLayer: (layerId, additive = false) => set((state) => ({
@@ -46,7 +50,7 @@ export const useEditorUiStore = create<EditorUiState>((set) => ({
       : [layerId],
   })),
   clearSelection: () => set({ selectedLayerIds: [] }),
-  setZoom: (zoom) => set({ zoom: Math.min(1.25, Math.max(0.2, zoom)) }),
+  setZoom: (zoom) => set({ zoom: Math.min(2, Math.max(0.1, zoom)) }),
   setOpenPanel: (openPanel) => set({ openPanel }),
   setTool: (tool) => set({ tool }),
   setHoveredLayer: (hoveredLayerId) => set({ hoveredLayerId }),

@@ -59,7 +59,7 @@ function HighlightedLinesField({
           if (event.key === "Escape") event.currentTarget.value = serialized;
         }}
       />
-      <p className="mt-1.5 text-[10px] text-stone-400">أرقام مفصولة بفواصل، مثال: 2, 4, 7</p>
+      <p className="mt-1.5 text-xs text-stone-400">أرقام مفصولة بفواصل، مثال: 2, 4, 7</p>
     </div>
   );
 }

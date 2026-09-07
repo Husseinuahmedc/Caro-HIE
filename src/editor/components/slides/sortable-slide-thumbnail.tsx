@@ -27,8 +27,8 @@ export function SortableSlideThumbnail({ document, slide, index, selected, asset
       <button type="button" onClick={onSelect} className={`min-w-0 flex-1 rounded-xl border p-2 text-right outline-none transition focus-visible:ring-2 focus-visible:ring-brand-ring ${selected ? "border-brand-accent bg-brand-accent-soft ring-2 ring-brand-accent/25" : "border-brand-border bg-surface-strong hover:border-primary/25"}`}>
         <div className="flex items-center gap-2">
           <span className="w-5 text-center text-xs font-bold text-stone-400">{index + 1}</span>
-          <div className="overflow-hidden rounded-lg bg-stone-100 shadow-inner" style={{ width: 88, height: frame.height * scale }}>
-            <div style={{ width: frame.width, height: frame.height, transform: `scale(${scale})`, transformOrigin: "top left" }} dir="ltr">
+          <div className="relative overflow-hidden rounded bg-stone-100" style={{ width: 88, height: frame.height * scale }}>
+            <div className="absolute left-0 top-0" style={{ width: frame.width, height: frame.height, transform: `scale(${scale})`, transformOrigin: "top left" }} dir="ltr">
               <SlideRenderer document={document} slide={slide} assetUrls={assetUrls} />
             </div>
           </div>

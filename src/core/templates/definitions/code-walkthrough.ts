@@ -7,7 +7,7 @@ export const codeWalkthroughTemplate: CarouselTemplate = {
   icon: "</>",
   roles: [
     { id: "cover", label: "الغلاف", hint: "السؤال البرمجي", layout: "cover" },
-    { id: "context", label: "السياق", hint: "شنو نريد نسوي؟", layout: "body" },
+    { id: "context", label: "السياق", hint: "ما النتيجة المطلوبة؟", layout: "body" },
     { id: "code", label: "الكود", hint: "السطر المهم", layout: "code" },
     { id: "explanation", label: "التفسير", hint: "اقرأه معاً", layout: "body" },
     { id: "pitfall", label: "انتبه", hint: "الفخ الشائع", layout: "body" },

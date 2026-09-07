@@ -1,6 +1,7 @@
 import { ArrowLeft, Trash2 } from "lucide-react";
 
 import type { ProjectSummary } from "@/storage";
+import { getFramePreset } from "@/core/document";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ar-IQ", { dateStyle: "medium", timeStyle: "short" });
 
@@ -24,7 +25,7 @@ export function ProjectCard({ project, onOpen, onDelete }: { project: ProjectSum
         <div className="mt-2 flex items-center gap-3 text-xs text-brand-muted">
           <span>{project.slideCount} شرائح</span>
           <span className="h-3 w-px bg-brand-border" />
-          <span>{project.framePresetId}</span>
+          <span>{getFramePreset(project.framePresetId).label}</span>
         </div>
         <time className="mt-3 block text-[11px] text-stone-400" dateTime={project.updatedAt}>
           {DATE_FORMATTER.format(new Date(project.updatedAt))}

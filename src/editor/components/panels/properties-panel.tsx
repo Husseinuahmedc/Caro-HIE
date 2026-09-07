@@ -98,7 +98,7 @@ function LayerHeader({
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
         <h3 className="truncate font-black">{layer.name}</h3>
-        <span className="text-xs uppercase text-stone-400">{layer.type}</span>
+        <span className="text-xs text-brand-muted">{{text: "نص", code: "كود", image: "صورة", shape: "شكل", icon: "أيقونة", group: "مجموعة"}[layer.type]}</span>
       </div>
       <div className="flex gap-1">
         <Button
@@ -134,7 +134,7 @@ function GeneralProperties({ layer, patch }: { layer: Layer; patch: PatchLayer }
         <NumberField label="العرض" value={layer.width} min={1} onChange={(width) => patch({ width })} />
         <NumberField label="الارتفاع" value={layer.height} min={1} onChange={(height) => patch({ height })} />
         <NumberField label="الدوران" value={layer.rotation} min={-360} max={360} onChange={(rotation) => patch({ rotation })} />
-        <NumberField label="الشفافية (0–1)" value={layer.opacity} min={0} max={1} step={0.05} onChange={(opacity) => patch({ opacity })} />
+        <label className="col-span-2 text-sm">الشفافية: {Math.round(layer.opacity * 100)}%<input aria-label="الشفافية" className="mt-2 w-full accent-primary" type="range" min={0} max={100} value={Math.round(layer.opacity * 100)} onChange={(event) => patch({opacity: Number(event.target.value) / 100})} /></label>
       </div>
     </PropertiesSection>
   );
@@ -228,7 +228,6 @@ export function PropertiesPanel() {
       ) : null}
 
       <fieldset disabled={layer.locked} className="space-y-5 disabled:opacity-60">
-        <GeneralProperties layer={layer} patch={patch} />
         {layer.type === "text" ? <TextProperties layer={layer} patch={patch} /> : null}
         {layer.type === "code" ? <CodeProperties layer={layer} patch={patch} /> : null}
         {layer.type === "shape" ? <ShapeProperties layer={layer} patch={patch} /> : null}
@@ -260,6 +259,7 @@ export function PropertiesPanel() {
           </PropertiesSection>
         ) : null}
       </fieldset>
+      <details className="border-t border-brand-border pt-4"><summary className="cursor-pointer py-2 text-sm font-bold">الموقع والحجم · متقدم</summary><fieldset disabled={layer.locked}><GeneralProperties layer={layer} patch={patch} /></fieldset></details>
 
       <LayerActions
         locked={layer.locked}

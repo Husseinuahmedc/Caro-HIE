@@ -5,7 +5,7 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/shared/class-names";
 
 export const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold outline-none transition disabled:pointer-events-none disabled:opacity-45 focus-visible:ring-2 focus-visible:ring-brand-ring/45 [&_svg]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold outline-none transition disabled:pointer-events-none disabled:opacity-45 focus-visible:ring-2 focus-visible:ring-brand-ring/45 aria-pressed:bg-brand-accent-soft [&_svg]:size-4",
   {
     variants: {
       variant: {
@@ -16,9 +16,9 @@ export const buttonVariants = cva(
         destructive: "bg-red-50 text-red-700 hover:bg-red-100",
       },
       size: {
-        default: "h-10 px-4",
-        sm: "h-8 rounded-lg px-3 text-xs",
-        icon: "size-9 p-0",
+        default: "min-h-11 px-4",
+        sm: "min-h-11 rounded-lg px-3 text-sm",
+        icon: "size-11 p-0",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

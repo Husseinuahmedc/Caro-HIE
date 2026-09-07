@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 
 import type { Layer } from "@/core/document";
+import { useState } from "react";
 import {
   changeLayerOrder,
   changeLayerPosition,
@@ -86,7 +87,7 @@ function SortableLayerRow({
         transform: CSS.Transform.toString(sortable.transform),
         transition: sortable.transition,
       }}
-      className={`flex items-center gap-1 rounded-xl border px-1.5 py-1.5 ${
+      className={`flex items-center gap-1 rounded-lg border px-1.5 py-1.5 ${
         sortable.isOver
           ? "border-brand-accent ring-2 ring-brand-accent/20"
           : selected
@@ -99,7 +100,7 @@ function SortableLayerRow({
         aria-label={`سحب طبقة ${layer.name}`}
         title={entry.orderingLocked ? "افتح قفل الطبقة أو مجموعتها لترتيبها" : "اسحب لإعادة الترتيب"}
         disabled={entry.orderingLocked}
-        className="grid size-7 shrink-0 cursor-grab place-items-center rounded-lg text-stone-300 hover:bg-white hover:text-stone-600 disabled:cursor-not-allowed disabled:opacity-40"
+        className="grid size-11 lg:size-8 shrink-0 cursor-grab place-items-center rounded-lg text-stone-300 hover:bg-white hover:text-stone-600 disabled:cursor-not-allowed disabled:opacity-40"
         {...sortable.attributes}
         {...sortable.listeners}
       >
@@ -108,7 +109,7 @@ function SortableLayerRow({
       <button
         type="button"
         aria-pressed={selected}
-        className="min-w-0 flex-1 truncate text-right text-xs font-semibold text-stone-700"
+        className="min-w-0 flex-1 truncate text-right text-sm font-semibold text-stone-700"
         onClick={(event) => onSelect(event.shiftKey)}
       >
         {layer.name}
@@ -117,7 +118,7 @@ function SortableLayerRow({
         type="button"
         variant="ghost"
         size="icon"
-        className="size-7"
+        className="size-11 lg:size-8"
         aria-label={layer.visible ? `إخفاء ${layer.name}` : `إظهار ${layer.name}`}
         onClick={onToggleVisibility}
       >
@@ -127,7 +128,7 @@ function SortableLayerRow({
         type="button"
         variant="ghost"
         size="icon"
-        className="size-7"
+        className="size-11 lg:size-8"
         aria-label={layer.locked ? `فتح قفل ${layer.name}` : `قفل ${layer.name}`}
         onClick={onToggleLock}
       >
@@ -138,6 +139,7 @@ function SortableLayerRow({
 }
 
 export function LayersPanel() {
+  const [multiSelect, setMultiSelect] = useState(false);
   const document = useProjectDocument();
   const session = useDocumentSession();
   const activeSlideId = useEditorUiStore((state) => state.activeSlideId) ?? document.slides[0]?.id;
@@ -171,13 +173,14 @@ export function LayersPanel() {
 
   return (
     <div className="space-y-3 p-3">
-      <div className="flex items-center justify-between gap-2">
+      <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={multiSelect} onChange={(event) => setMultiSelect(event.target.checked)} className="size-4 accent-primary" />تحديد عدة عناصر</label>
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[11px] font-semibold text-stone-500">الطبقة الأعلى تظهر في المقدمة</p>
-        <div className="flex items-center gap-0.5 rounded-xl border border-stone-200 bg-white p-0.5">
-          <Button type="button" variant="ghost" size="icon" className="size-7" aria-label="إلى المقدمة" title="إلى المقدمة" disabled={!selectedLayerId} onClick={() => changeOrder("front")}><BringToFront /></Button>
-          <Button type="button" variant="ghost" size="icon" className="size-7" aria-label="للأمام خطوة" title="للأمام خطوة" disabled={!selectedLayerId} onClick={() => changeOrder("forward")}><ArrowUp /></Button>
-          <Button type="button" variant="ghost" size="icon" className="size-7" aria-label="للخلف خطوة" title="للخلف خطوة" disabled={!selectedLayerId} onClick={() => changeOrder("backward")}><ArrowDown /></Button>
-          <Button type="button" variant="ghost" size="icon" className="size-7" aria-label="إلى الخلف بالكامل" title="إلى الخلف بالكامل" disabled={!selectedLayerId} onClick={() => changeOrder("back")}><SendToBack /></Button>
+        <div className="flex items-center gap-0.5 rounded-lg border border-stone-200 bg-white p-0.5">
+          <Button type="button" variant="ghost" size="icon" className="size-11 lg:size-8" aria-label="إلى المقدمة" title="إلى المقدمة" disabled={!selectedLayerId} onClick={() => changeOrder("front")}><BringToFront /></Button>
+          <Button type="button" variant="ghost" size="icon" className="size-11 lg:size-8" aria-label="للأمام خطوة" title="للأمام خطوة" disabled={!selectedLayerId} onClick={() => changeOrder("forward")}><ArrowUp /></Button>
+          <Button type="button" variant="ghost" size="icon" className="size-11 lg:size-8" aria-label="للخلف خطوة" title="للخلف خطوة" disabled={!selectedLayerId} onClick={() => changeOrder("backward")}><ArrowDown /></Button>
+          <Button type="button" variant="ghost" size="icon" className="size-11 lg:size-8" aria-label="إلى الخلف بالكامل" title="إلى الخلف بالكامل" disabled={!selectedLayerId} onClick={() => changeOrder("back")}><SendToBack /></Button>
         </div>
       </div>
 
@@ -190,7 +193,7 @@ export function LayersPanel() {
                   key={entry.layer.id}
                   entry={entry}
                   selected={selectedIds.includes(entry.layer.id)}
-                  onSelect={(additive) => selectLayer(entry.layer.id, additive)}
+                  onSelect={(additive) => selectLayer(entry.layer.id, additive || multiSelect)}
                   onToggleVisibility={() => toggleVisibility(session, slideId, entry.layer.id)}
                   onToggleLock={() => toggleLock(session, slideId, entry.layer.id)}
                 />
@@ -201,6 +204,7 @@ export function LayersPanel() {
       ) : (
         <p className="p-6 text-center text-sm text-stone-400">لا توجد طبقات في هذه الشريحة.</p>
       )}
+      {selectedIds.length ? <Button className="w-full lg:hidden" variant="secondary" onClick={() => {useEditorUiStore.getState().setOpenPanel("properties"); useEditorUiStore.getState().setInspectorOpen(true);}}>تعديل التحديد</Button> : null}
     </div>
   );
 }

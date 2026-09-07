@@ -6,11 +6,11 @@ export const beforeAfterTemplate: CarouselTemplate = {
   description: "اعرض التحول بوضوح: الوضع القديم، القرار، والنتيجة.",
   icon: "↔",
   roles: [
-    { id: "cover", label: "التحول", hint: "شنو تغيّر؟", layout: "cover" },
+    { id: "cover", label: "التحول", hint: "ما الذي تغيّر؟", layout: "cover" },
     { id: "before", label: "قبل", hint: "الوضع المربك", layout: "comparison" },
     { id: "decision", label: "القرار", hint: "الحركة الفاصلة", layout: "body" },
     { id: "after", label: "بعد", hint: "النتيجة الجديدة", layout: "comparison" },
-    { id: "lesson", label: "الدرس", hint: "شنو نتعلم؟", layout: "body" },
-    { id: "cta", label: "سؤال", hint: "خلّ الجمهور يشارك", layout: "cta" },
+    { id: "lesson", label: "الدرس", hint: "ما الذي نتعلمه؟", layout: "body" },
+    { id: "cta", label: "سؤال", hint: "ادعُ الجمهور للمشاركة", layout: "cta" },
   ],
 };

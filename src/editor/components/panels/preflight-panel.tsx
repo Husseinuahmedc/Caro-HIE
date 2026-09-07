@@ -1,32 +1,51 @@
 "use client";
 
-import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
-
-import { runPreflight, type PreflightSeverity } from "@/core/preflight";
-import { useProjectDocument } from "@/editor/hooks/use-document-session";
+import { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
+import { runPreflight, type PreflightIssue } from "@/core/preflight";
+import { contrastRatio } from "@/core/preflight/color-contrast";
+import { findLayerContext, patchLayer } from "@/core/engine";
+import { applySlideOperation } from "@/editor/commands";
+import { useDocumentSession, useProjectDocument } from "@/editor/hooks/use-document-session";
 import { useEditorUiStore } from "@/editor/state/editor-ui-store";
-import { Badge } from "@/shared/ui";
-
-const severityPresentation: Record<PreflightSeverity, { icon: typeof Info; className: string; label: string }> = {
-  error: { icon: AlertCircle, className: "border-red-200 bg-red-50 text-red-800", label: "خطأ" },
-  warning: { icon: AlertTriangle, className: "border-amber-200 bg-amber-50 text-amber-800", label: "تنبيه" },
-  info: { icon: Info, className: "border-sky-200 bg-sky-50 text-sky-800", label: "ملاحظة" },
-};
+import { Button } from "@/shared/ui";
 
 export function PreflightPanel() {
   const document = useProjectDocument();
+  const session = useDocumentSession();
   const issues = runPreflight(document);
-  const setActiveSlide = useEditorUiStore((state) => state.setActiveSlide);
-  const selectLayer = useEditorUiStore((state) => state.selectLayer);
-  return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-start justify-between"><div><h3 className="font-black">فحص قبل التصدير</h3><p className="mt-1 text-xs text-stone-500">{issues.length ? "راجع النقاط التالية." : "كل القواعد اجتازت الفحص."}</p></div><Badge>{issues.length}</Badge></div>
-      {!issues.length ? <div className="grid min-h-44 place-items-center rounded-2xl border border-emerald-200 bg-emerald-50 text-center text-emerald-800"><div><CheckCircle2 className="mx-auto mb-2 size-8" /><strong>جاهز للتصدير</strong></div></div> : null}
-      {issues.map((item) => {
-        const presentation = severityPresentation[item.severity];
-        const Icon = presentation.icon;
-        return <button key={item.id} type="button" className={`flex w-full gap-3 rounded-xl border p-3 text-right ${presentation.className}`} onClick={() => { if (item.target.slideId) setActiveSlide(item.target.slideId); if (item.target.layerId) selectLayer(item.target.layerId); }}><Icon className="mt-0.5 size-4 shrink-0" /><span><strong className="block text-xs">{presentation.label}</strong><span className="mt-1 block text-xs leading-5">{item.message}</span></span></button>;
-      })}
-    </div>
-  );
+  const [notice, setNotice] = useState("");
+  const ui = useEditorUiStore();
+  function locate(item: PreflightIssue) {
+    if (item.target.slideId) ui.setActiveSlide(item.target.slideId);
+    if (item.target.layerId) ui.selectLayer(item.target.layerId);
+    ui.setOpenPanel("properties");
+    if (window.innerWidth < 1024) ui.setInspectorOpen(true);
+  }
+  function fixContrast(item: PreflightIssue) {
+    const {slideId, layerId} = item.target;
+    if (!slideId || !layerId) return;
+    const background = document.brand.colors.background;
+    const color = contrastRatio("#19454b", background) >= 4.5 ? "#19454b"
+      : contrastRatio("#ffffff", background) > contrastRatio("#111111", background) ? "#ffffff" : "#111111";
+    session.update((current) => applySlideOperation(current, slideId, (slide) => patchLayer(slide, layerId, {color})), {label: "تحسين تباين النص", kind: "layer", affectedIds: [layerId]});
+    setNotice("تم تحسين التباين. يمكنك التراجع لاستعادة اللون السابق.");
+  }
+  return <div className="space-y-4">
+    <p role="status" className="text-sm text-brand-muted">{notice || (issues.length ? `${issues.length} ملاحظات تستحق المراجعة.` : "اجتاز التصميم الفحص الآلي. راجع المحتوى بصرياً قبل النشر.")}</p>
+    {!issues.length ? <div className="flex items-center gap-3 rounded-lg bg-brand-accent-soft p-5"><CheckCircle2 /><strong>جاهز للتصدير</strong></div> : null}
+    {issues.map((item) => {
+      const slide = document.slides.find((entry) => entry.id === item.target.slideId);
+      const context = slide && item.target.layerId ? findLayerContext(slide.layers, item.target.layerId) : null;
+      const layer = context?.layer;
+      return <article key={item.id} className="space-y-3 rounded-lg border border-brand-border p-4">
+        <p className={`text-sm font-bold ${item.severity === "error" ? "text-red-700" : "text-primary"}`}>{slide ? `الشريحة ${document.slides.indexOf(slide) + 1}: ${slide.name}` : "السلسلة"}{layer ? ` / ${layer.name}` : ""}</p>
+        <p className="text-sm leading-6">{item.message}</p>
+        <div className="flex flex-wrap gap-2">
+          {item.target.slideId ? <Button variant="secondary" onClick={() => locate(item)}>فتح العنصر</Button> : <Button variant="secondary" onClick={() => ui.setOpenPanel("navigation")}>فتح الشرائح</Button>}
+          {item.ruleId === "contrast" && layer && !layer.locked && !context?.parentLocked ? <Button variant="accent" onClick={() => fixContrast(item)}>تحسين التباين</Button> : null}
+        </div>
+      </article>;
+    })}
+  </div>;
 }

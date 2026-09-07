@@ -48,7 +48,8 @@ export function useCanvasInteractions({ document, slide, zoom, frameElementRef }
   function beginMove(event: ReactPointerEvent<HTMLDivElement>, layerId: string) {
     event.stopPropagation();
     const context = findLayerContext(slide.layers, layerId);
-    selectLayer(layerId, event.shiftKey);
+    const existingSelection = useEditorUiStore.getState().selectedLayerIds;
+    if (event.shiftKey || !existingSelection.includes(layerId)) selectLayer(layerId, event.shiftKey);
     setOpenPanel("properties");
     if (!context || context.layer.locked || context.parentLocked) return;
     const currentSelection = useEditorUiStore.getState().selectedLayerIds;

@@ -15,6 +15,7 @@ import { SlideSidebar } from "../slides/slide-sidebar";
 import { EditorTopbar } from "../topbar/editor-topbar";
 import { EditorAssetsProvider } from "./editor-assets-context";
 import { DocumentFontLoader } from "./document-font-loader";
+import { WorkspacePanels } from "./workspace-panels";
 
 interface EditorProjectProps {
   initialDocument: ProjectDocument;
@@ -30,7 +31,7 @@ export function EditorProject({ initialDocument, onExit }: EditorProjectProps) {
   const focusMode = useEditorUiStore((state) => state.focusMode);
   const setActiveSlide = useEditorUiStore((state) => state.setActiveSlide);
   useEditorShortcuts(autosave.saveNow);
-  useInitialCanvasZoom(initialDocument.id, frame.width);
+  useInitialCanvasZoom(initialDocument.id, frame.width, frame.height);
 
   useEffect(() => {
     const firstSlideId = initialDocument.slides[0]?.id;
@@ -48,11 +49,12 @@ export function EditorProject({ initialDocument, onExit }: EditorProjectProps) {
       <DocumentFontLoader />
       <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-background text-stone-950">
         <EditorTopbar status={autosave.status} errorMessage={autosave.errorMessage} onSave={autosave.saveNow} onExit={exitEditor} />
-        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <div className="flex min-h-0 flex-1">
           {!focusMode ? <SlideSidebar /> : null}
           <EditorCanvas />
           {!focusMode ? <EditorInspector /> : null}
         </div>
+        <WorkspacePanels />
       </div>
     </EditorAssetsProvider>
   );

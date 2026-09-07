@@ -31,7 +31,7 @@ export function createDocumentFromTemplate(
   const plan: ContentPlan = {
     goal: "شرح الفكرة بدون حشو",
     audience: "صنّاع المحتوى والمطورون العرب",
-    hook: "شنو يصير فعلياً؟",
+    hook: "ماذا يحدث فعلياً؟",
     tone: "واضح ومباشر",
     slides: template.roles.map((role, index) => ({
       id: role.id,

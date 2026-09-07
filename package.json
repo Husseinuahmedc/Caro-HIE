@@ -1,6 +1,6 @@
 {
   "name": "carousel-studio",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
   "private": true,
   "description": "Arabic-first, local-first fixed-frame carousel editor.",

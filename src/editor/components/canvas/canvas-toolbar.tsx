@@ -23,7 +23,7 @@ export function CanvasToolbar() {
   }
 
   return (
-    <div className="absolute right-1/2 top-3 z-30 flex translate-x-1/2 items-center gap-1 rounded-2xl border border-brand-border bg-surface-strong/95 p-1.5 shadow-[0_12px_35px_rgba(25,69,75,0.15)] backdrop-blur">
+    <div role="toolbar" aria-label="إضافة عناصر" className="absolute right-1/2 top-3 z-30 flex max-w-[calc(100%-1rem)] translate-x-1/2 items-center gap-0 overflow-x-auto rounded-lg border border-brand-border bg-surface-strong p-1 shadow-sm">
       <Button type="button" variant="ghost" size="sm" title="نص" aria-label="إضافة نص" onClick={() => insert(createTextLayer())}><Pilcrow /><span className="hidden lg:inline">نص</span></Button>
       <Button type="button" variant="ghost" size="sm" title="شكل" aria-label="إضافة شكل" onClick={() => insert(createShapeLayer())}><Shapes /><span className="hidden lg:inline">شكل</span></Button>
       <Button type="button" variant="ghost" size="sm" title="كود" aria-label="إضافة كود" onClick={() => insert(createCodeLayer())}><Braces /><span className="hidden lg:inline">كود</span></Button>

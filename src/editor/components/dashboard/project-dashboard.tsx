@@ -7,15 +7,18 @@ import { DashboardHero } from "./dashboard-hero";
 import { NewProjectForm, type NewProjectValues } from "./new-project-form";
 import { ProductHighlights } from "./product-highlights";
 import { ProjectCard } from "./project-card";
+import { ImportBackup } from "./import-backup";
+import type { ProjectDocument } from "@/core/document";
 
 interface ProjectDashboardProps {
   projects: ProjectSummary[];
   onCreate: (values: NewProjectValues) => Promise<void>;
   onOpen: (projectId: string) => Promise<void>;
   onDelete: (projectId: string) => Promise<void>;
+  onImported: (document: ProjectDocument) => void;
 }
 
-export function ProjectDashboard({ projects, onCreate, onOpen, onDelete }: ProjectDashboardProps) {
+export function ProjectDashboard({ projects, onCreate, onOpen, onDelete, onImported }: ProjectDashboardProps) {
   return (
     <div id="top" className="flex min-h-screen flex-col bg-background text-stone-950">
       <SiteHeader />
@@ -24,29 +27,28 @@ export function ProjectDashboard({ projects, onCreate, onOpen, onDelete }: Proje
 
         <section
           id="new-project"
-          className="-mx-4 scroll-mt-20 border-y border-brand-border bg-surface-strong px-4 py-12 sm:-mx-8 sm:px-8 sm:py-14 lg:-mx-12 lg:px-12"
+          className="scroll-mt-24 rounded-xl border border-brand-border bg-surface-strong p-5 sm:p-7"
           aria-labelledby="new-project-title"
         >
           <div className="mx-auto max-w-[1296px]">
-            <div className="mb-10 flex items-start justify-between gap-6">
+            <div className="mb-5 flex items-start justify-between gap-6">
               <div>
                 <h2 id="new-project-title" className="text-3xl font-black tracking-tight text-primary sm:text-4xl">
-                  ابدأ بالسلسلة، مو بالشريحة.
+                  مشروع جديد
                 </h2>
                 <p className="mt-2 text-sm text-brand-muted">سمِّ المشروع، اختر بنية المحتوى، وحدد المقاس.</p>
               </div>
-              <span className="text-6xl font-black leading-none text-primary sm:text-8xl">02</span>
             </div>
             <NewProjectForm onCreate={onCreate} />
+            <ImportBackup onImported={onImported} />
           </div>
         </section>
 
         <section id="projects" className="scroll-mt-28 py-12 sm:py-16" aria-labelledby="projects-title">
           <div className="mb-8 flex items-end justify-between gap-5 border-b border-brand-border pb-7">
-            <span className="text-6xl font-black leading-none text-primary sm:text-8xl">03</span>
             <div className="text-left sm:text-right">
               <span className="text-xs font-black text-brand-muted">محفوظة في هذا المتصفح</span>
-              <h2 id="projects-title" className="mt-2 text-3xl font-black text-primary sm:text-4xl">مشاريعك، مرتبة كسلاسل.</h2>
+              <h2 id="projects-title" className="mt-2 text-3xl font-black text-primary">مشاريعك</h2>
               <span className="mt-2 block text-xs font-bold text-brand-accent-strong">{projects.length} محفوظ</span>
             </div>
           </div>
