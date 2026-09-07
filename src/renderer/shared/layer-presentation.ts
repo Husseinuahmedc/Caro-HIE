@@ -19,7 +19,8 @@ export function getLayerFrameStyle(layer: Layer): React.CSSProperties {
 export function getTextStyle(layer: TextLayer): React.CSSProperties {
   const justifyContent = layer.verticalAlign === "top" ? "flex-start" : layer.verticalAlign === "bottom" ? "flex-end" : "center";
   return {
-    display: "flex",
+    display: layer.visible ? "flex" : "none",
+    flexDirection: "column",
     alignItems: "stretch",
     justifyContent,
     overflow: "hidden",
@@ -35,6 +36,12 @@ export function getTextStyle(layer: TextLayer): React.CSSProperties {
     color: layer.color,
   };
 }
+
+export const TEXT_CONTENT_STYLE: React.CSSProperties = {
+  display: "block",
+  width: "100%",
+  flexShrink: 0,
+};
 
 export function getCodeStyle(layer: CodeLayer): React.CSSProperties {
   return {

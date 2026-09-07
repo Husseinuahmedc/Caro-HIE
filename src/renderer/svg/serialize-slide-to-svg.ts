@@ -116,10 +116,11 @@ function serializeLayer(layer: Layer, assets: ExportAssetSources): string {
   const contentHeight = lines.length * lineAdvance;
   const contentTop = layer.verticalAlign === "top" ? 0 : layer.verticalAlign === "bottom" ? layer.height - contentHeight : (layer.height - contentHeight) / 2;
   const textX = layer.align === "right" ? layer.width : layer.align === "center" ? layer.width / 2 : 0;
-  const anchor = layer.align === "right" ? "end" : layer.align === "center" ? "middle" : "start";
+  const anchor = layer.align === "center" ? "middle"
+    : (layer.align === "right") === (layer.direction === "rtl") ? "start" : "end";
   const clipId = `text-clip-${escapeXml(layer.id)}`;
   const text = lines.map((line, index) => `<tspan x="${textX}" dy="${index === 0 ? 0 : lineAdvance}">${escapeXml(line)}</tspan>`).join("");
-  return `<g ${common}><defs><clipPath id="${clipId}"><rect width="${layer.width}" height="${layer.height}"/></clipPath></defs><text x="${textX}" y="${contentTop + layer.fontSize}" clip-path="url(#${clipId})" fill="${layer.color}" font-family="${escapeXml(getEditorFontFamily(layer.fontFamilyId))}" font-size="${layer.fontSize}" font-weight="${layer.fontWeight}" letter-spacing="${layer.letterSpacing}" direction="${layer.direction}" unicode-bidi="plaintext" text-anchor="${anchor}">${text}</text></g>`;
+  return `<g ${common}><defs><clipPath id="${clipId}"><rect width="${layer.width}" height="${layer.height}"/></clipPath></defs><text x="${textX}" y="${contentTop + layer.fontSize}" clip-path="url(#${clipId})" fill="${layer.color}" font-family="${escapeXml(getEditorFontFamily(layer.fontFamilyId))}" font-size="${layer.fontSize}" font-weight="${layer.fontWeight}" letter-spacing="${layer.letterSpacing}" direction="${layer.direction}" unicode-bidi="embed" text-anchor="${anchor}">${text}</text></g>`;
 }
 
 export function serializeSlideToSvg(

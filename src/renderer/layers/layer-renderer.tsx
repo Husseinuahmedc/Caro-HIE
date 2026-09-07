@@ -6,7 +6,7 @@ import type { Layer } from "@/core/document";
 import { getCodeLayout } from "../code/code-tokenizer";
 import { getCodeTheme, getCodeTokenColor } from "../code/code-themes";
 import { IconGraphic } from "../icons/icon-graphic";
-import { getCodeStyle, getIconRenderSize, getLayerFrameStyle, getTextStyle } from "../shared/layer-presentation";
+import { getCodeStyle, getIconRenderSize, getLayerFrameStyle, getTextStyle, TEXT_CONTENT_STYLE } from "../shared/layer-presentation";
 
 interface LayerRendererProps {
   layer: Layer;
@@ -24,7 +24,7 @@ function LayerRendererComponent({ layer, assetUrls, editingLayerId }: LayerRende
     );
   }
   if (layer.type === "text") {
-    return <div data-layer-id={layer.id} data-layer-type="text" style={{ ...frameStyle, ...getTextStyle(layer), visibility: editingLayerId === layer.id ? "hidden" : undefined }}><span>{layer.content}</span></div>;
+    return <div data-layer-id={layer.id} data-layer-type="text" style={{ ...frameStyle, ...getTextStyle(layer), visibility: editingLayerId === layer.id ? "hidden" : undefined }}><span style={TEXT_CONTENT_STYLE}>{layer.content}</span></div>;
   }
   if (layer.type === "code") {
     const layout = getCodeLayout(layer);
@@ -78,10 +78,15 @@ function LayerRendererComponent({ layer, assetUrls, editingLayerId }: LayerRende
     );
   }
   if (layer.type === "shape") {
+    if (layer.shape === "line") {
+      return <div data-layer-id={layer.id} data-layer-type="shape" style={frameStyle}>
+        <svg width={layer.width} height={layer.height} style={{ display: "block", overflow: "visible" }}>
+          <line x1={0} y1={layer.height / 2} x2={layer.width} y2={layer.height / 2} stroke={layer.stroke} strokeWidth={Math.max(layer.strokeWidth, 2)} strokeLinecap="round" />
+        </svg>
+      </div>;
+    }
     const borderRadius = layer.shape === "circle" ? "50%" : layer.radius;
-    const shapeStyle = layer.shape === "line"
-      ? { background: layer.stroke, height: Math.max(layer.strokeWidth, 2), top: layer.y + layer.height / 2 }
-      : { background: layer.fill, border: `${layer.strokeWidth}px solid ${layer.stroke}`, borderRadius };
+    const shapeStyle = { background: layer.fill, border: `${layer.strokeWidth}px solid ${layer.stroke}`, borderRadius };
     return <div data-layer-id={layer.id} data-layer-type="shape" style={{ ...frameStyle, ...shapeStyle }} />;
   }
   if (layer.type === "icon") {

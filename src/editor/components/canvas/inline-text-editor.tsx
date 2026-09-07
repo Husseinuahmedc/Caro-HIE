@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { TextLayer } from "@/core/document";
-import { getTextStyle } from "@/renderer/shared/layer-presentation";
+import { getTextStyle, TEXT_CONTENT_STYLE } from "@/renderer/shared/layer-presentation";
 
 export function InlineTextEditor({ layer, onCommit, onCancel }: {
   layer: TextLayer;
@@ -26,7 +26,7 @@ export function InlineTextEditor({ layer, onCommit, onCancel }: {
 
   return <div className="h-full w-full" style={getTextStyle(layer)} onPointerDown={(event) => event.stopPropagation()}>
     <span ref={ref} role="textbox" aria-label="تحرير النص مباشرة" aria-multiline="true" contentEditable suppressContentEditableWarning dir={layer.direction}
-      className="w-full outline-none" style={{ minHeight: "1em", cursor: "text", userSelect: "text" }}
+      className="outline-none" style={{ ...TEXT_CONTENT_STYLE, minHeight: "1em", cursor: "text", userSelect: "text" }}
       onBlur={() => { if (!finished.current) { finished.current = true; onCommit(ref.current?.innerText ?? layer.content); } }}
       onKeyDown={(event) => {
         event.stopPropagation();
