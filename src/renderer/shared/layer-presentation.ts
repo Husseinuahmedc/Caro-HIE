@@ -23,7 +23,7 @@ export function getTextStyle(layer: TextLayer): React.CSSProperties {
     flexDirection: "column",
     alignItems: "stretch",
     justifyContent,
-    overflow: "hidden",
+    overflow: "clip",
     whiteSpace: "pre-wrap",
     overflowWrap: "anywhere",
     direction: layer.direction,

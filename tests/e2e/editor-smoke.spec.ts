@@ -58,7 +58,7 @@ test("aligns text on independent axes in the canvas, inline editor and SVG expor
       const editor = page.getByRole("textbox", {name: "تحرير النص مباشرة"});
       const during = await textPosition(editor);
       for (const edge of ["left", "right", "top", "bottom"] as const) {
-        expect(Math.abs(during[edge] - before[edge])).toBeLessThan(2);
+        expect(Math.abs(during[edge] - before[edge]), `${direction} ${align} ${edge}: ${JSON.stringify({before, during})}`).toBeLessThan(2);
       }
       await editor.press("Control+Enter");
 

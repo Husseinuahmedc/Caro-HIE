@@ -16,7 +16,7 @@ export function InlineTextEditor({ layer, onCommit, onCancel }: {
     const element = ref.current;
     if (!element) return;
     element.innerText = initialContent.current;
-    element.focus();
+    element.focus({ preventScroll: true });
     const range = document.createRange();
     range.selectNodeContents(element);
     const selection = window.getSelection();
