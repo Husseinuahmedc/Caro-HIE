@@ -163,21 +163,47 @@ test("exports the whole series, one slide, and a restorable backup", async ({ pa
   await expect(page.getByRole("textbox", {name: "اسم المشروع", exact: true})).toHaveValue(/مستعاد/);
 });
 
-test("loads an uploaded OFL font in the editor and embeds it in SVG export", async ({ page }) => {
-  test.setTimeout(60_000);
+test("loads uploaded TTF and OTF fonts in the editor and embeds them in SVG export", async ({ page }) => {
+  test.setTimeout(120_000);
   await createProject(page);
   const textLayer = page.locator("[data-canvas-frame] [data-layer-type='text']").first();
   const textLayerId = await textLayer.getAttribute("data-layer-id");
   await page.locator(`[data-hit-layer="${textLayerId}"]`).click();
 
   const picker = page.getByLabel("الخط", { exact: true });
-  await expect(picker.locator('optgroup[label="خطوط عرض مضافة"] option')).toHaveCount(6);
-  await picker.selectOption("rooyin-free");
-  await page.getByLabel("الوزن", { exact: true }).fill("700");
-  await page.getByLabel("الوزن", { exact: true }).press("Tab");
-
-  await expect.poll(() => page.evaluate(() => document.fonts.check('700 16px "Carousel Rooyin Free"'))).toBe(true);
-  await expect(textLayer.locator("span")).toHaveCSS("font-family", /Carousel Rooyin Free/);
+  const displayOptions = picker.locator('optgroup[label="خطوط عرض مضافة"] option');
+  await expect(displayOptions).toHaveCount(30);
+  const uploadedFonts = await displayOptions.evaluateAll((options) => options.map((option) => ({
+    id: (option as HTMLOptionElement).value,
+    family: `Carousel ${option.textContent}`,
+  })));
+  for (const font of uploadedFonts) {
+    await picker.selectOption(font.id);
+    await expect.poll(() => page.evaluate((family) => {
+      const faces = [...document.fonts].filter((face) => face.family === family);
+      return faces.length > 0 && faces.every((face) => face.status === "loaded");
+    }, font.family), { timeout: 15_000, message: `Font did not load: ${font.family}` }).toBe(true);
+  }
+  for (const font of [
+    { id: "rooyin-free", family: "Carousel Rooyin Free", weight: 700 },
+    { id: "milan-display", family: "Carousel Milan Display", weight: 900 },
+  ]) {
+    await picker.selectOption(font.id);
+    await page.getByLabel("الوزن", { exact: true }).fill(String(font.weight));
+    await page.getByLabel("الوزن", { exact: true }).press("Tab");
+    await expect.poll(() => page.evaluate(({ family, weight }) => document.fonts.check(`${weight} 16px "${family}"`), font)).toBe(true);
+    await expect(textLayer.locator("span")).toHaveCSS("font-family", new RegExp(font.family));
+    const measuredWidths = await page.evaluate(({ family, weight }) => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d")!;
+      const sample = "واجهتك العربية واضحة Aa 123";
+      context.font = `${weight} 72px "${family}"`;
+      const uploadedFont = context.measureText(sample).width;
+      context.font = `${weight} 72px Arial`;
+      return { uploadedFont, fallbackFont: context.measureText(sample).width };
+    }, font);
+    expect(measuredWidths.uploadedFont).not.toBeCloseTo(measuredWidths.fallbackFont, 1);
+  }
 
   await page.getByRole("button", { name: "تصدير", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "تصدير السلسلة" });
@@ -191,9 +217,9 @@ test("loads an uploaded OFL font in the editor and embeds it in SVG export", asy
   for await (const chunk of stream) chunks.push(chunk);
   const svg = Buffer.concat(chunks).toString();
 
-  expect(svg).toContain('font-family:"Carousel Rooyin Free"');
-  expect(svg).toContain('format("truetype")');
-  expect(svg).toContain("data:font/ttf;base64,");
+  expect(svg).toContain('font-family:"Carousel Milan Display"');
+  expect(svg).toContain('format("opentype")');
+  expect(svg).toContain("data:font/otf;base64,");
 });
 
 test("reorders layers and exposes code and icon controls", async ({ page }) => {

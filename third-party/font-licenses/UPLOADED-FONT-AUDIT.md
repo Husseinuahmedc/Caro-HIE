@@ -1,6 +1,6 @@
 # Uploaded font audit
 
-This audit covers the 104 font files supplied in four ZIP archives. Names and weights were read from each font's OpenType `name` and `OS/2` tables. The repository is public, so a font is bundled only when the supplied file itself contains terms that explicitly permit redistribution and web embedding.
+This audit covers the 104 font files supplied in four ZIP archives. Names and weights were read from each font's OpenType `name` and `OS/2` tables. All 104 supplied files are now bundled at the repository owner's explicit request; original embedded notices are preserved.
 
 ## Bundled
 
@@ -12,9 +12,9 @@ This audit covers the 104 font files supplied in four ZIP archives. Names and we
 
 The applicable license and copyright notices are in [`Ario-Rooyin-OFL.txt`](./Ario-Rooyin-OFL.txt).
 
-## Not bundled
+## Additional bundled families and their supplied terms
 
-| Family | Detected weights | Files | Reason |
+| Family | Detected weights | Files | Embedded/supplied terms |
 | --- | --- | ---: | --- |
 | F37 Wicklow Arabic Trial | 300, 400, 500, 700, 800, 900 | 6 | F37 EULA; trial files, no redistribution permission supplied |
 | F37 Wicklow Arabic Stencil Trial | 300, 400, 500, 700, 800, 900 | 6 | F37 EULA; trial files, no redistribution permission supplied |
@@ -40,4 +40,4 @@ The applicable license and copyright notices are in [`Ario-Rooyin-OFL.txt`](./Ar
 | Hagrid Text Arabic Trial | 400, 500, 700, 800, 900 | 5 | Trial EULA prohibits redistribution and commercial/webfont use |
 | Hagrid Variable Trial | 400 default | 1 | Trial EULA prohibits redistribution and commercial/webfont use |
 
-To add an excluded family later, supply a license that explicitly covers repository redistribution and browser/webfont embedding, plus the corresponding licensed font files.
+The picker labels trial families explicitly. Inclusion does not replace or expand the terms embedded by each copyright holder.

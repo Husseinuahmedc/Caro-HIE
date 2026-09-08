@@ -1,0 +1,22 @@
+Uploaded font terms
+===================
+
+These font files were supplied by the repository owner. Their original
+copyright, license, trial, personal-use, and embedding notices remain stored
+inside each unmodified font binary.
+
+Open Font License 1.1:
+- Ario Dots 1-4
+- Rooyin Free Regular, Bold, and Regular Dots 2
+
+Other uploaded families have their own terms or embedded notices:
+- Qahwa Arabic, Al-Awwal, Jarood, FoundingDay Free, SA Hazm
+- Arsenica Arabic Trial, Milligram Arabic Trial, Madika Arabic Trial
+- Lenos, NaN SuperX Arabic Trial, Mayson Arabic Trial, Codec Pro ME Trial
+- Milan Display, Hagrid Arabic/Text/Variable Trial
+- Metras, TROX, InstaArabi, F37 Wicklow Arabic/Stencil Trial
+
+Some supplied files identify themselves as trial, personal-use-only, or
+restricted font software. Inclusion in this repository does not replace or
+expand those terms. Users are responsible for using each family only within
+the rights granted by its copyright holder.

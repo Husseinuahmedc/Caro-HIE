@@ -6,15 +6,21 @@ const pendingFonts = new Map<string, Promise<void>>();
 async function loadBundledFont(font: EditorFontDefinition): Promise<void> {
   await Promise.all(
     font.sources.map(async (source) => {
-      const face = new FontFace(font.family, `url(${source.path}) format('${source.format}')`, {
+      const response = await fetch(source.path);
+      if (!response.ok) throw new Error(`Failed to load editor font: ${source.path}`);
+      const descriptors: FontFaceDescriptors = {
         style: font.style,
         weight: source.weight,
-        unicodeRange: source.unicodeRange,
-      });
+      };
+      if (source.unicodeRange) descriptors.unicodeRange = source.unicodeRange;
+      const face = new FontFace(font.family, await response.arrayBuffer(), descriptors);
       const loaded = await face.load();
       document.fonts.add(loaded);
+      return loaded;
     }),
   );
+  const previewWeight = font.weights.includes(400) ? 400 : font.weights[0] ?? 400;
+  await document.fonts.load(`${previewWeight} 32px "${font.family}"`, "أبجد هوز 123");
 }
 
 async function loadGoogleFont(font: EditorFontDefinition): Promise<void> {
