@@ -1,6 +1,6 @@
 export interface EditorFontSource {
   path: string;
-  format: "woff2";
+  format: "woff2" | "truetype" | "opentype";
   weight: string;
   unicodeRange?: string;
 }
@@ -14,6 +14,7 @@ export interface EditorFontDefinition {
   weights: readonly number[];
   style: "normal";
   provider: EditorFontProvider;
+  category: "core" | "display";
   license: string;
   licensePath: string | null;
   sources: readonly EditorFontSource[];
@@ -31,6 +32,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
     style: "normal",
     provider: "bundled",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: "/licenses/Noto-Kufi-Arabic-OFL.txt",
     sources: [
@@ -45,12 +47,56 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [400, 500, 600, 700],
     style: "normal",
     provider: "bundled",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: "/licenses/IBM-Plex-Sans-Arabic-OFL.txt",
     sources: [400, 500, 600, 700].flatMap((weight) => [
       { path: `/fonts/ibm-plex-sans-arabic/ibm-plex-sans-arabic-arabic-${weight}-normal.woff2`, format: "woff2" as const, weight: String(weight), unicodeRange: ARABIC_UNICODE_RANGE },
       { path: `/fonts/ibm-plex-sans-arabic/ibm-plex-sans-arabic-latin-${weight}-normal.woff2`, format: "woff2" as const, weight: String(weight), unicodeRange: LATIN_UNICODE_RANGE },
     ]),
+  },
+  ...([1, 2, 3, 4] as const).map((variant) => ({
+    id: `ario-dots-${variant}`,
+    displayName: `Ario Dots ${variant}`,
+    family: `Carousel Ario Dots ${variant}`,
+    weights: [400],
+    style: "normal" as const,
+    provider: "bundled" as const,
+    category: "display" as const,
+    license: "SIL Open Font License 1.1",
+    licensePath: "/licenses/Ario-Rooyin-OFL.txt",
+    sources: [
+      { path: `/fonts/ario-dots/Ario-Dots${variant}.ttf`, format: "truetype" as const, weight: "400" },
+    ],
+  })),
+  {
+    id: "rooyin-free",
+    displayName: "Rooyin Free",
+    family: "Carousel Rooyin Free",
+    weights: [400, 700],
+    style: "normal",
+    provider: "bundled",
+    category: "display",
+    license: "SIL Open Font License 1.1",
+    licensePath: "/licenses/Ario-Rooyin-OFL.txt",
+    sources: [
+      { path: "/fonts/rooyin-free/RooyinFree-Regular.ttf", format: "truetype", weight: "400" },
+      { path: "/fonts/rooyin-free/RooyinFree-Bold.ttf", format: "truetype", weight: "700" },
+    ],
+  },
+  {
+    id: "rooyin-free-dots-2",
+    displayName: "Rooyin Free Dots 2",
+    family: "Carousel Rooyin Free Dots 2",
+    weights: [400],
+    style: "normal",
+    provider: "bundled",
+    category: "display",
+    license: "SIL Open Font License 1.1",
+    licensePath: "/licenses/Ario-Rooyin-OFL.txt",
+    sources: [
+      { path: "/fonts/rooyin-free/RooyinFree-RegularDots2.ttf", format: "truetype", weight: "400" },
+    ],
   },
   {
     id: "cairo",
@@ -59,6 +105,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [300, 400, 500, 600, 700, 800, 900],
     style: "normal",
     provider: "google",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: null,
     sources: [],
@@ -71,6 +118,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [200, 300, 400, 500, 700, 800, 900],
     style: "normal",
     provider: "google",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: null,
     sources: [],
@@ -83,6 +131,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [300, 400, 500, 600, 700, 800, 900],
     style: "normal",
     provider: "google",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: null,
     sources: [],
@@ -95,6 +144,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [300, 400, 700, 800],
     style: "normal",
     provider: "google",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: null,
     sources: [],
@@ -107,6 +157,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [400, 500, 600, 700],
     style: "normal",
     provider: "google",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: null,
     sources: [],
@@ -119,6 +170,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [400, 700],
     style: "normal",
     provider: "google",
+    category: "core",
     license: "SIL Open Font License 1.1",
     licensePath: null,
     sources: [],
@@ -131,6 +183,7 @@ export const EDITOR_FONT_REGISTRY = [
     weights: [400, 500, 600, 700],
     style: "normal",
     provider: "system",
+    category: "core",
     license: "System font stack",
     licensePath: null,
     sources: [],

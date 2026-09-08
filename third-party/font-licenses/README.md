@@ -9,3 +9,5 @@ This directory contains the complete redistribution licenses for every font bina
 | IBM Plex Sans Arabic | Editor selectable | `IBM-Plex-Sans-Arabic-OFL.txt` |
 
 Do not add a font binary unless its license explicitly permits redistribution and web embedding.
+
+The uploaded-font review is recorded in [`UPLOADED-FONT-AUDIT.md`](./UPLOADED-FONT-AUDIT.md). Only Ario Dots and Rooyin Free were bundled because their embedded metadata explicitly identifies the SIL Open Font License 1.1.

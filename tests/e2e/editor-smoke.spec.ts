@@ -163,6 +163,39 @@ test("exports the whole series, one slide, and a restorable backup", async ({ pa
   await expect(page.getByRole("textbox", {name: "اسم المشروع", exact: true})).toHaveValue(/مستعاد/);
 });
 
+test("loads an uploaded OFL font in the editor and embeds it in SVG export", async ({ page }) => {
+  test.setTimeout(60_000);
+  await createProject(page);
+  const textLayer = page.locator("[data-canvas-frame] [data-layer-type='text']").first();
+  const textLayerId = await textLayer.getAttribute("data-layer-id");
+  await page.locator(`[data-hit-layer="${textLayerId}"]`).click();
+
+  const picker = page.getByLabel("الخط", { exact: true });
+  await expect(picker.locator('optgroup[label="خطوط عرض مضافة"] option')).toHaveCount(6);
+  await picker.selectOption("rooyin-free");
+  await page.getByLabel("الوزن", { exact: true }).fill("700");
+  await page.getByLabel("الوزن", { exact: true }).press("Tab");
+
+  await expect.poll(() => page.evaluate(() => document.fonts.check('700 16px "Carousel Rooyin Free"'))).toBe(true);
+  await expect(textLayer.locator("span")).toHaveCSS("font-family", /Carousel Rooyin Free/);
+
+  await page.getByRole("button", { name: "تصدير", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "تصدير السلسلة" });
+  await dialog.getByLabel("الشرائح", { exact: true }).selectOption("current");
+  await dialog.getByLabel("الصيغة", { exact: true }).selectOption("svg");
+  const pending = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "تنزيل الملفات" }).click();
+  const download = await pending;
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  const svg = Buffer.concat(chunks).toString();
+
+  expect(svg).toContain('font-family:"Carousel Rooyin Free"');
+  expect(svg).toContain('format("truetype")');
+  expect(svg).toContain("data:font/ttf;base64,");
+});
+
 test("reorders layers and exposes code and icon controls", async ({ page }) => {
   await createProject(page);
   await page.getByRole("button", {name: "إضافة شكل"}).click();
