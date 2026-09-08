@@ -16,13 +16,18 @@ interface FontPickerProps {
 export function FontPicker({ label, value, onChange, includeSystemMono = false }: FontPickerProps) {
   const id = useId();
   const currentFont = getEditorFont(value);
-  const bundledFonts = EDITOR_FONT_REGISTRY.filter((font) => font.provider === "bundled" || (includeSystemMono && font.provider === "system"));
+  const displayFonts = EDITOR_FONT_REGISTRY.filter((font) => font.provider === "bundled" && font.category === "display");
+  const bundledFonts = EDITOR_FONT_REGISTRY.filter((font) => (font.provider === "bundled" && font.category === "core") || (includeSystemMono && font.provider === "system"));
   const googleFonts = EDITOR_FONT_REGISTRY.filter((font) => font.provider === "google");
+  const sourceLabel = currentFont.provider === "google" ? "Google" : currentFont.category === "display" ? "مضاف محليًا" : "مضمّن";
 
   return (
     <div>
       <Label htmlFor={id}>{label}</Label>
       <Select id={id} value={value} style={{ fontFamily: currentFont.family }} onChange={(event) => onChange(event.target.value)}>
+        <optgroup label="خطوط عرض مضافة">
+          {displayFonts.map((font) => <option key={font.id} value={font.id}>{font.displayName}</option>)}
+        </optgroup>
         <optgroup label="خطوط مضمّنة">
           {bundledFonts.map((font) => <option key={font.id} value={font.id}>{font.displayName}</option>)}
         </optgroup>
@@ -34,7 +39,7 @@ export function FontPicker({ label, value, onChange, includeSystemMono = false }
         <span className="truncate text-xs text-brand-muted" style={{ fontFamily: currentFont.family }}>أبجد هوز — Aa 123</span>
         <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-brand-accent-strong">
           {currentFont.provider === "google" ? <Globe2 className="size-3.5" /> : <HardDrive className="size-3.5" />}
-          {currentFont.provider === "google" ? "Google" : "مضمّن"}
+          {sourceLabel}
         </span>
       </div>
     </div>
