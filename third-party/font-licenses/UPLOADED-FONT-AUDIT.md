@@ -1,12 +1,11 @@
 # Uploaded font audit
 
-This audit covers the 104 font files supplied in four ZIP archives. Names and weights were read from each font's OpenType `name` and `OS/2` tables. All 104 supplied files are now bundled at the repository owner's explicit request; original embedded notices are preserved.
+This audit covers the 104 font files supplied in four ZIP archives. Names and weights were read from each font's OpenType `name` and `OS/2` tables. One hundred supplied files remain bundled; the four non-working Ario Dots variants were removed at the repository owner's explicit request. Original embedded notices are preserved.
 
 ## Bundled
 
 | Family | Detected weights | Files | Basis |
 | --- | --- | ---: | --- |
-| Ario Dots 1–4 | 400 | 4 | Embedded metadata: SIL Open Font License 1.1 |
 | Rooyin Free | 400, 700 | 2 | Embedded metadata: SIL Open Font License 1.1 |
 | Rooyin Free Dots 2 | 400 | 1 | Embedded metadata: SIL Open Font License 1.1 |
 

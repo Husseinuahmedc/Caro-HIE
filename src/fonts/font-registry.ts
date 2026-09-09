@@ -157,20 +157,6 @@ export const EDITOR_FONT_REGISTRY = [
       { path: `/fonts/ibm-plex-sans-arabic/ibm-plex-sans-arabic-latin-${weight}-normal.woff2`, format: "woff2" as const, weight: String(weight), unicodeRange: LATIN_UNICODE_RANGE },
     ]),
   },
-  ...([1, 2, 3, 4] as const).map((variant) => ({
-    id: `ario-dots-${variant}`,
-    displayName: `Ario Dots ${variant}`,
-    family: `Carousel Ario Dots ${variant}`,
-    weights: [400],
-    style: "normal" as const,
-    provider: "bundled" as const,
-    category: "display" as const,
-    license: "SIL Open Font License 1.1",
-    licensePath: "/licenses/Ario-Rooyin-OFL.txt",
-    sources: [
-      { path: `/fonts/ario-dots/Ario-Dots${variant}.ttf`, format: "truetype" as const, weight: "400" },
-    ],
-  })),
   {
     id: "rooyin-free",
     displayName: "Rooyin Free",

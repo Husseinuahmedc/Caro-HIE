@@ -6,7 +6,6 @@ copyright, license, trial, personal-use, and embedding notices remain stored
 inside each unmodified font binary.
 
 Open Font License 1.1:
-- Ario Dots 1-4
 - Rooyin Free Regular, Bold, and Regular Dots 2
 
 Other uploaded families have their own terms or embedded notices:

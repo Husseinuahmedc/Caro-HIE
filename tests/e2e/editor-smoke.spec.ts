@@ -172,7 +172,7 @@ test("loads uploaded TTF and OTF fonts in the editor and embeds them in SVG expo
 
   const picker = page.getByLabel("الخط", { exact: true });
   const displayOptions = picker.locator('optgroup[label="خطوط عرض مضافة"] option');
-  await expect(displayOptions).toHaveCount(30);
+  await expect(displayOptions).toHaveCount(26);
   const uploadedFonts = await displayOptions.evaluateAll((options) => options.map((option) => ({
     id: (option as HTMLOptionElement).value,
     family: `Carousel ${option.textContent}`,
