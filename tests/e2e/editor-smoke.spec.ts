@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 async function createProject(page: Page) {
   await page.goto("/");
@@ -7,6 +7,87 @@ async function createProject(page: Page) {
   await page.getByRole("button", {name: "متابعة إلى التصميم"}).click();
   await expect(page.locator("[data-canvas-frame]")).toBeVisible();
 }
+
+async function textPosition(span: Locator) {
+  return span.evaluate((element) => {
+    const frame = element.parentElement!;
+    const box = frame.getBoundingClientRect();
+    const scale = box.width / frame.offsetWidth;
+    const line = element.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const text = range.getBoundingClientRect();
+    return {
+      left: (text.left - box.left) / scale,
+      right: (box.right - text.right) / scale,
+      top: (line.top - box.top) / scale,
+      bottom: (box.bottom - line.bottom) / scale,
+    };
+  });
+}
+
+test("aligns text on independent axes in the canvas, inline editor and SVG export", async ({ page, context }) => {
+  test.setTimeout(120_000);
+  await createProject(page);
+  await page.getByRole("button", {name: "إضافة نص", exact: true}).click();
+  await page.getByRole("textbox", {name: "المحتوى", exact: true}).fill("مرحبا Hello");
+  await page.evaluate(() => document.fonts.ready);
+  const layer = page.locator("[data-canvas-frame] [data-layer-type='text']").last();
+  const id = await layer.getAttribute("data-layer-id");
+  const exportedPage = await context.newPage();
+
+  for (const direction of ["rtl", "ltr"]) {
+    await page.getByLabel("الاتجاه", {exact: true}).selectOption(direction);
+    for (const [align, label] of [["right", "محاذاة يمين"], ["center", "محاذاة وسط"], ["left", "محاذاة يسار"]]) {
+      await page.getByRole("button", {name: label, exact: true}).click();
+      await expect(page.getByLabel("المحاذاة", {exact: true})).toHaveValue(align);
+      for (const vertical of ["top", "middle", "bottom"]) {
+        await page.getByLabel("المحاذاة العمودية", {exact: true}).selectOption(vertical);
+        await expect.poll(async () => {
+          const p = await textPosition(layer.locator("span"));
+          return Math.abs(align === "left" ? p.left : align === "right" ? p.right : p.left - p.right);
+        }).toBeLessThan(2);
+        await expect.poll(async () => {
+          const p = await textPosition(layer.locator("span"));
+          return Math.abs(vertical === "top" ? p.top : vertical === "bottom" ? p.bottom : p.top - p.bottom);
+        }).toBeLessThan(2);
+      }
+
+      const before = await textPosition(layer.locator("span"));
+      await page.getByRole("button", {name: "تحرير النص", exact: true}).click();
+      const editor = page.getByRole("textbox", {name: "تحرير النص مباشرة"});
+      const during = await textPosition(editor);
+      for (const edge of ["left", "right", "top", "bottom"] as const) {
+        expect(Math.abs(during[edge] - before[edge]), `${direction} ${align} ${edge}: ${JSON.stringify({before, during})}`).toBeLessThan(2);
+      }
+      await editor.press("Control+Enter");
+
+      await page.getByRole("button", {name: "تصدير", exact: true}).click();
+      const dialog = page.getByRole("dialog", {name: "تصدير السلسلة"});
+      await dialog.getByLabel("الشرائح", {exact: true}).selectOption("current");
+      await dialog.getByLabel("الصيغة", {exact: true}).selectOption("svg");
+      const pending = page.waitForEvent("download");
+      await dialog.getByRole("button", {name: "تنزيل الملفات"}).click();
+      const download = await pending;
+      const stream = await download.createReadStream();
+      const chunks = [];
+      for await (const chunk of stream) chunks.push(chunk);
+      await exportedPage.setContent(Buffer.concat(chunks).toString());
+      await exportedPage.evaluate(() => document.fonts.ready);
+      const bounds = await exportedPage.locator(`text[clip-path="url(#text-clip-${id})"]`).evaluate((element) => {
+        const text = element as SVGTextElement;
+        const box = text.getBBox();
+        const width = Number(text.parentElement!.querySelector("clipPath rect")!.getAttribute("width"));
+        return {left: box.x, right: width - box.x - box.width};
+      });
+      expect(bounds.left).toBeGreaterThanOrEqual(-3);
+      expect(bounds.right).toBeGreaterThanOrEqual(-3);
+      expect(Math.abs(align === "left" ? bounds.left : align === "right" ? bounds.right : bounds.left - bounds.right)).toBeLessThan(3);
+      await dialog.getByRole("button", {name: "إغلاق", exact: true}).click();
+    }
+  }
+  await exportedPage.close();
+});
 
 test("edits text directly, keeps the planner current, and reopens the saved project", async ({ page }) => {
   await createProject(page);
@@ -80,6 +161,65 @@ test("exports the whole series, one slide, and a restorable backup", async ({ pa
   await page.getByRole("button", {name: "العودة إلى المشاريع"}).click();
   await page.getByLabel("ملف النسخة الاحتياطية").setInputFiles({name: "backup.json", mimeType: "application/json", buffer: backup});
   await expect(page.getByRole("textbox", {name: "اسم المشروع", exact: true})).toHaveValue(/مستعاد/);
+});
+
+test("loads uploaded TTF and OTF fonts in the editor and embeds them in SVG export", async ({ page }) => {
+  test.setTimeout(120_000);
+  await createProject(page);
+  const textLayer = page.locator("[data-canvas-frame] [data-layer-type='text']").first();
+  const textLayerId = await textLayer.getAttribute("data-layer-id");
+  await page.locator(`[data-hit-layer="${textLayerId}"]`).click();
+
+  const picker = page.getByLabel("الخط", { exact: true });
+  const displayOptions = picker.locator('optgroup[label="خطوط عرض مضافة"] option');
+  await expect(displayOptions).toHaveCount(26);
+  const uploadedFonts = await displayOptions.evaluateAll((options) => options.map((option) => ({
+    id: (option as HTMLOptionElement).value,
+    family: `Carousel ${option.textContent}`,
+  })));
+  for (const font of uploadedFonts) {
+    await picker.selectOption(font.id);
+    await expect.poll(() => page.evaluate((family) => {
+      const faces = [...document.fonts].filter((face) => face.family === family);
+      return faces.length > 0 && faces.every((face) => face.status === "loaded");
+    }, font.family), { timeout: 15_000, message: `Font did not load: ${font.family}` }).toBe(true);
+  }
+  for (const font of [
+    { id: "rooyin-free", family: "Carousel Rooyin Free", weight: 700 },
+    { id: "milan-display", family: "Carousel Milan Display", weight: 900 },
+  ]) {
+    await picker.selectOption(font.id);
+    await page.getByLabel("الوزن", { exact: true }).fill(String(font.weight));
+    await page.getByLabel("الوزن", { exact: true }).press("Tab");
+    await expect.poll(() => page.evaluate(({ family, weight }) => document.fonts.check(`${weight} 16px "${family}"`), font)).toBe(true);
+    await expect(textLayer.locator("span")).toHaveCSS("font-family", new RegExp(font.family));
+    const measuredWidths = await page.evaluate(({ family, weight }) => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d")!;
+      const sample = "واجهتك العربية واضحة Aa 123";
+      context.font = `${weight} 72px "${family}"`;
+      const uploadedFont = context.measureText(sample).width;
+      context.font = `${weight} 72px Arial`;
+      return { uploadedFont, fallbackFont: context.measureText(sample).width };
+    }, font);
+    expect(measuredWidths.uploadedFont).not.toBeCloseTo(measuredWidths.fallbackFont, 1);
+  }
+
+  await page.getByRole("button", { name: "تصدير", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "تصدير السلسلة" });
+  await dialog.getByLabel("الشرائح", { exact: true }).selectOption("current");
+  await dialog.getByLabel("الصيغة", { exact: true }).selectOption("svg");
+  const pending = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "تنزيل الملفات" }).click();
+  const download = await pending;
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  const svg = Buffer.concat(chunks).toString();
+
+  expect(svg).toContain('font-family:"Carousel Milan Display"');
+  expect(svg).toContain('format("opentype")');
+  expect(svg).toContain("data:font/otf;base64,");
 });
 
 test("reorders layers and exposes code and icon controls", async ({ page }) => {
