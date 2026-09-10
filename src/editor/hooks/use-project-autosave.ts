@@ -33,8 +33,12 @@ export function useProjectAutosave(delay = 900) {
   }, [session]);
 
   useEffect(() => session.subscribe(() => {
+    if (session.isDirty || session.isTransactionOpen) {
+      setStatus("pending");
+    } else {
+      setStatus("saved");
+    }
     if (!session.isDirty || session.isTransactionOpen) return;
-    setStatus("pending");
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => void saveNow(), delay);
   }), [delay, saveNow, session]);

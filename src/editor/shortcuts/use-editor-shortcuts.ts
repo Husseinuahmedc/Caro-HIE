@@ -20,6 +20,14 @@ export function useEditorShortcuts(onSave: () => Promise<void>) {
         return;
       }
       if (editingText) return;
+
+      const isModalOpen = Boolean(
+        window.document.querySelector('[role="dialog"]:not([aria-modal="false"])') ||
+        window.document.querySelector('[aria-modal="true"]') ||
+        target?.closest('[role="dialog"]:not([aria-modal="false"])')
+      );
+      if (isModalOpen) return;
+
       const { activeSlideId, selectedLayerIds, clearSelection, selectLayer } = useEditorUiStore.getState();
       const document = session.getSnapshot();
       const slideId = activeSlideId ?? document.slides[0]?.id;

@@ -15,10 +15,11 @@ import {
   Unlock,
 } from "lucide-react";
 
-import { getLayer, type Layer } from "@/core/document";
+import { type Layer } from "@/core/document";
 import {
   alignLayers,
   distributeLayers,
+  findLayerContext,
   patchLayer,
   type AlignmentMode,
   type DistributionMode,
@@ -124,19 +125,47 @@ function LayerHeader({
   );
 }
 
-function GeneralProperties({ layer, patch }: { layer: Layer; patch: PatchLayer }) {
+function CommonTransformProperties({ layer, patch }: { layer: Layer; patch: PatchLayer }) {
   return (
-    <PropertiesSection title="عام">
-      <TextField label="اسم الطبقة" value={layer.name} onChange={(name) => patch({ name })} />
+    <PropertiesSection title="الحجم والمظهر">
       <div className="grid grid-cols-2 gap-3">
-        <NumberField label="X" value={layer.x} onChange={(x) => patch({ x })} />
-        <NumberField label="Y" value={layer.y} onChange={(y) => patch({ y })} />
         <NumberField label="العرض" value={layer.width} min={1} onChange={(width) => patch({ width })} />
         <NumberField label="الارتفاع" value={layer.height} min={1} onChange={(height) => patch({ height })} />
         <NumberField label="الدوران" value={layer.rotation} min={-360} max={360} onChange={(rotation) => patch({ rotation })} />
-        <label className="col-span-2 text-sm">الشفافية: {Math.round(layer.opacity * 100)}%<input aria-label="الشفافية" className="mt-2 w-full accent-primary" type="range" min={0} max={100} value={Math.round(layer.opacity * 100)} onChange={(event) => patch({opacity: Number(event.target.value) / 100})} /></label>
+        <div className="flex flex-col justify-end">
+          <div className="flex items-center justify-between text-xs font-semibold text-stone-700">
+            <span>الشفافية</span>
+            <span dir="ltr">{Math.round(layer.opacity * 100)}%</span>
+          </div>
+          <input
+            aria-label="الشفافية"
+            className="mt-2 w-full accent-primary"
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(layer.opacity * 100)}
+            onChange={(event) => patch({ opacity: Number(event.target.value) / 100 })}
+          />
+        </div>
       </div>
     </PropertiesSection>
+  );
+}
+
+function SecondaryMetadataProperties({ layer, patch }: { layer: Layer; patch: PatchLayer }) {
+  return (
+    <details className="border-t border-brand-border pt-3">
+      <summary className="cursor-pointer py-1 text-xs font-bold text-stone-500 hover:text-primary">
+        الموقع والتسمية · متقدم
+      </summary>
+      <div className="mt-3 space-y-3">
+        <TextField label="اسم الطبقة" value={layer.name} onChange={(name) => patch({ name })} />
+        <div className="grid grid-cols-2 gap-3">
+          <NumberField label="X" value={layer.x} onChange={(x) => patch({ x })} />
+          <NumberField label="Y" value={layer.y} onChange={(y) => patch({ y })} />
+        </div>
+      </div>
+    </details>
   );
 }
 
@@ -152,13 +181,16 @@ function LayerActions({
   onDelete: () => void;
 }) {
   return (
-    <div className="grid grid-cols-6 gap-1 border-t border-stone-200 pt-4">
-      <Button variant="ghost" size="icon" aria-label="إلى المقدمة" title="إلى المقدمة" disabled={locked} onClick={() => onOrder("front")}><BringToFront /></Button>
-      <Button variant="ghost" size="icon" aria-label="للأمام خطوة" title="للأمام خطوة" disabled={locked} onClick={() => onOrder("forward")}><ArrowUp /></Button>
-      <Button variant="ghost" size="icon" aria-label="للخلف خطوة" title="للخلف خطوة" disabled={locked} onClick={() => onOrder("backward")}><ArrowDown /></Button>
-      <Button variant="ghost" size="icon" aria-label="إلى الخلف بالكامل" title="إلى الخلف بالكامل" disabled={locked} onClick={() => onOrder("back")}><SendToBack /></Button>
-      <Button variant="ghost" size="icon" aria-label="تكرار" onClick={onDuplicate}><Copy /></Button>
-      <Button variant="destructive" size="icon" aria-label="حذف" disabled={locked} onClick={onDelete}><Trash2 /></Button>
+    <div className="space-y-2 border-t border-stone-200 pt-4">
+      <span className="block text-xs font-black text-stone-500">الترتيب والإجراءات</span>
+      <div className="grid grid-cols-6 gap-1">
+        <Button variant="ghost" size="icon" aria-label="إلى المقدمة" title="إلى المقدمة" disabled={locked} onClick={() => onOrder("front")}><BringToFront /></Button>
+        <Button variant="ghost" size="icon" aria-label="للأمام خطوة" title="للأمام خطوة" disabled={locked} onClick={() => onOrder("forward")}><ArrowUp /></Button>
+        <Button variant="ghost" size="icon" aria-label="للخلف خطوة" title="للخلف خطوة" disabled={locked} onClick={() => onOrder("backward")}><ArrowDown /></Button>
+        <Button variant="ghost" size="icon" aria-label="إلى الخلف بالكامل" title="إلى الخلف بالكامل" disabled={locked} onClick={() => onOrder("back")}><SendToBack /></Button>
+        <Button variant="ghost" size="icon" aria-label="تكرار" title="تكرار العنصر" onClick={onDuplicate}><Copy /></Button>
+        <Button variant="destructive" size="icon" aria-label="حذف" title="حذف العنصر" disabled={locked} onClick={onDelete}><Trash2 /></Button>
+      </div>
     </div>
   );
 }
@@ -172,9 +204,9 @@ export function PropertiesPanel() {
   const selectLayer = useEditorUiStore((state) => state.selectLayer);
   const clearSelection = useEditorUiStore((state) => state.clearSelection);
   const slide = document.slides.find((entry) => entry.id === activeSlideId);
-  const layer = slide && selectedIds.length === 1
-    ? getLayer(slide.layers, selectedIds[0] ?? "")
-    : null;
+  const context = slide && selectedIds.length === 1 ? findLayerContext(slide.layers, selectedIds[0] ?? "") : null;
+  const layer = context?.layer ?? null;
+  const isEffectivelyLocked = Boolean(layer?.locked || context?.parentLocked);
 
   function applyOperation(operation: Parameters<typeof applySlideOperation>[2], label: string) {
     if (!slide) return;
@@ -218,16 +250,25 @@ export function PropertiesPanel() {
       <LayerHeader
         layer={layer}
         onToggleVisibility={() => toggleVisibility(session, slide.id, layer.id)}
-        onToggleLock={() => patch({ locked: !layer.locked }, "تغيير القفل")}
+        onToggleLock={() => {
+          if (context?.parentLocked) return;
+          patch({ locked: !layer.locked }, "تغيير القفل");
+        }}
       />
 
-      {layer.locked ? (
+      {context?.parentLocked ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+          هذا العنصر مقفول لأن المجموعة التي تحتويه مقفولة.
+        </p>
+      ) : layer.locked ? (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
           الطبقة مقفولة. افتح القفل لتعديل خصائصها.
         </p>
       ) : null}
 
-      <fieldset disabled={layer.locked} className="space-y-5 disabled:opacity-60">
+      <fieldset disabled={isEffectivelyLocked} className="space-y-5 disabled:opacity-60">
+        <CommonTransformProperties layer={layer} patch={patch} />
+
         {layer.type === "text" ? <TextProperties layer={layer} patch={patch} /> : null}
         {layer.type === "code" ? <CodeProperties layer={layer} patch={patch} /> : null}
         {layer.type === "shape" ? <ShapeProperties layer={layer} patch={patch} /> : null}
@@ -258,11 +299,12 @@ export function PropertiesPanel() {
             </Button>
           </PropertiesSection>
         ) : null}
+
+        <SecondaryMetadataProperties layer={layer} patch={patch} />
       </fieldset>
-      <details className="border-t border-brand-border pt-4"><summary className="cursor-pointer py-2 text-sm font-bold">الموقع والحجم · متقدم</summary><fieldset disabled={layer.locked}><GeneralProperties layer={layer} patch={patch} /></fieldset></details>
 
       <LayerActions
-        locked={layer.locked}
+        locked={isEffectivelyLocked}
         onOrder={(action) => changeLayerOrder(session, slide.id, layer.id, action)}
         onDuplicate={() => {
           const id = duplicateOneLayer(session, slide.id, layer.id);

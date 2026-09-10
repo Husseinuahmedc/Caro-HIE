@@ -88,6 +88,7 @@ export class DocumentSession {
 
   beginTransaction(metadata: HistoryMetadata): void {
     this.#history.begin(this.#document, metadata);
+    this.#emit();
   }
 
   replaceTransientDocument(document: ProjectDocument): void {
@@ -108,6 +109,7 @@ export class DocumentSession {
     const restored = this.#history.cancel();
     if (!restored) return;
     this.#document = withCurrentPersistenceRevision(restored, this.#document);
+    this.#dirty = false;
     this.#emit();
   }
 

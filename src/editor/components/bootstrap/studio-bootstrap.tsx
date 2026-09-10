@@ -39,7 +39,8 @@ export function StudioBootstrap() {
   async function create(values: NewProjectValues) {
     const draft = createDocumentFromTemplate(values.templateId, { name: values.name, framePresetId: values.framePresetId });
     setActiveDocument(await createProject(draft));
-    useEditorUiStore.setState({ openPanel: "planner", selectedLayerIds: [], inspectorOpen: false, focusMode: false });
+    const initialPanel = values.templateId === "blank" ? "properties" : "planner";
+    useEditorUiStore.setState({ openPanel: initialPanel, selectedLayerIds: [], inspectorOpen: false, focusMode: false });
   }
 
   async function open(projectId: string) {

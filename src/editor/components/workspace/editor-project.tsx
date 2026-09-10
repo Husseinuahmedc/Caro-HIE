@@ -34,6 +34,17 @@ export function EditorProject({ initialDocument, onExit }: EditorProjectProps) {
   useInitialCanvasZoom(initialDocument.id, frame.width, frame.height);
 
   useEffect(() => {
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      if (session.isDirty || session.isTransactionOpen) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [session]);
+
+  useEffect(() => {
     const firstSlideId = initialDocument.slides[0]?.id;
     if (firstSlideId) setActiveSlide(firstSlideId);
   }, [initialDocument.id, initialDocument.slides, setActiveSlide]);
@@ -51,7 +62,7 @@ export function EditorProject({ initialDocument, onExit }: EditorProjectProps) {
         <EditorTopbar status={autosave.status} errorMessage={autosave.errorMessage} onSave={autosave.saveNow} onExit={exitEditor} />
         <div className="flex min-h-0 flex-1">
           {!focusMode ? <SlideSidebar /> : null}
-          <EditorCanvas />
+          <EditorCanvas onSave={autosave.saveNow} />
           {!focusMode ? <EditorInspector /> : null}
         </div>
         <WorkspacePanels />

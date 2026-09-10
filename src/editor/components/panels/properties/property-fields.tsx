@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 import { Input, Label, Select, Textarea } from "@/shared/ui";
 
@@ -29,22 +29,98 @@ export function NumberField({
   step?: number;
 }) {
   const id = useId();
+  const formatNumber = (val: number) =>
+    Number.isInteger(val) ? String(val) : String(Number(val.toFixed(2)));
+
+  const [draft, setDraft] = useState<string>(formatNumber(value));
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [prevValue, setPrevValue] = useState(value);
+
+  if (!isFocused && value !== prevValue) {
+    setPrevValue(value);
+    setDraft(formatNumber(value));
+    setErrorMessage(null);
+  }
+
+  function validate(text: string): { valid: boolean; value?: number; error?: string } {
+    const trimmed = text.trim();
+    if (trimmed === "" || trimmed === "-" || trimmed === "+") {
+      return { valid: false, error: "الحقل مطلوب." };
+    }
+    const num = Number(trimmed);
+    if (!Number.isFinite(num)) {
+      return { valid: false, error: "أدخل رقماً صالحاً." };
+    }
+    if (min !== undefined && num < min) {
+      return { valid: false, error: `الحد الأدنى ${min}` };
+    }
+    if (max !== undefined && num > max) {
+      return { valid: false, error: `الحد الأقصى ${max}` };
+    }
+    return { valid: true, value: num };
+  }
+
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const nextDraft = event.target.value;
+    setDraft(nextDraft);
+
+    if (nextDraft === "" || nextDraft === "-" || nextDraft === "+") {
+      setErrorMessage(null);
+      return;
+    }
+
+    const check = validate(nextDraft);
+    if (!check.valid) {
+      setErrorMessage(check.error ?? "قيمة غير صالحة.");
+    } else {
+      setErrorMessage(null);
+      onChange(check.value!);
+    }
+  }
+
+  function handleBlur() {
+    setIsFocused(false);
+    const check = validate(draft);
+    if (check.valid && check.value !== undefined) {
+      setErrorMessage(null);
+      setDraft(formatNumber(check.value));
+      onChange(check.value);
+    } else {
+      setDraft(formatNumber(value));
+      setErrorMessage(null);
+    }
+  }
+
   return (
     <div>
       <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
         type="number"
-        value={Number.isInteger(value) ? value : Number(value.toFixed(2))}
+        value={draft}
         min={min}
         max={max}
         step={step}
         dir="ltr"
-        onChange={(event) => {
-          const next = Number(event.target.value);
-          if (Number.isFinite(next)) onChange(next);
+        onFocus={() => setIsFocused(true)}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.currentTarget.blur();
+          if (event.key === "Escape") {
+            setDraft(formatNumber(value));
+            setErrorMessage(null);
+            event.currentTarget.blur();
+          }
         }}
+        aria-invalid={errorMessage !== null}
       />
+      {errorMessage ? (
+        <p role="alert" className="mt-1 text-xs font-semibold text-red-600">
+          {errorMessage}
+        </p>
+      ) : null}
     </div>
   );
 }

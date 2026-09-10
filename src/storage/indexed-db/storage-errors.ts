@@ -1,3 +1,5 @@
+import { ZodError } from "zod";
+
 export class RevisionConflictError extends Error {
   constructor(
     readonly projectId: string,
@@ -16,6 +18,13 @@ export class ProjectNotFoundError extends Error {
   }
 }
 
+export class DocumentValidationError extends Error {
+  constructor(message = "بيانات المستند غير صالحة للحفظ.", options?: ErrorOptions) {
+    super(message, options);
+    this.name = "DocumentValidationError";
+  }
+}
+
 export class StorageUnavailableError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -24,12 +33,25 @@ export class StorageUnavailableError extends Error {
 }
 
 export function normalizeStorageError(error: unknown): Error {
-  if (error instanceof RevisionConflictError || error instanceof ProjectNotFoundError) return error;
+  if (
+    error instanceof RevisionConflictError ||
+    error instanceof ProjectNotFoundError ||
+    error instanceof DocumentValidationError
+  ) {
+    return error;
+  }
+  if (error instanceof ZodError || (error instanceof Error && (error.name === "ZodError" || "issues" in error))) {
+    return new DocumentValidationError("بيانات المستند غير صالحة للحفظ.", { cause: error });
+  }
   if (error instanceof DOMException && error.name === "QuotaExceededError") {
     return new StorageUnavailableError("مساحة التخزين المحلية ممتلئة.", { cause: error });
+  }
+  if (error instanceof StorageUnavailableError) {
+    return error;
   }
   if (error instanceof Error) {
     return new StorageUnavailableError("تعذر الوصول إلى التخزين المحلي.", { cause: error });
   }
   return new StorageUnavailableError("حدث خطأ غير معروف في التخزين المحلي.");
 }
+

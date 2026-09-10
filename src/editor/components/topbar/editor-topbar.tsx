@@ -1,6 +1,5 @@
-"use client";
-
-import { ArrowRight, Focus, Grid2X2, Redo2, Undo2, ZoomIn, ZoomOut, Maximize, SlidersHorizontal, PanelsTopLeft } from "lucide-react";
+import { useState } from "react";
+import { Archive, ArrowRight, Focus, Grid2X2, Redo2, Undo2, ZoomIn, ZoomOut, Maximize, SlidersHorizontal, PanelsTopLeft } from "lucide-react";
 import { useDocumentSession, useProjectDocument } from "@/editor/hooks/use-document-session";
 import type { AutosaveStatus } from "@/editor/hooks/use-project-autosave";
 import { useEditorUiStore } from "@/editor/state/editor-ui-store";
@@ -22,6 +21,22 @@ export function EditorTopbar({ status, errorMessage, onSave, onExit }: EditorTop
   const session = useDocumentSession();
   const ui = useEditorUiStore();
   const frame = getFramePreset(document.framePresetId);
+  const [backupBusy, setBackupBusy] = useState(false);
+
+  async function downloadBackup() {
+    if (backupBusy) return;
+    setBackupBusy(true);
+    try {
+      const { exportProjectBackup } = await import("@/storage/recovery/project-backup");
+      const { downloadBlob } = await import("@/export/shared/download-blob");
+      const blob = await exportProjectBackup(document);
+      const baseName = document.name.trim().replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, "-") || "carousel";
+      downloadBlob(blob, `${baseName}-backup.json`);
+    } finally {
+      setBackupBusy(false);
+    }
+  }
+
   function fit() {
     const canvas = window.document.querySelector("[data-editor-canvas]");
     if (!canvas) return;
@@ -42,7 +57,20 @@ export function EditorTopbar({ status, errorMessage, onSave, onExit }: EditorTop
         <Button variant="ghost" size="sm" onClick={() => ui.setOpenPanel("preflight")}>الفحص</Button>
         <Button variant="ghost" size="sm" onClick={() => ui.setOpenPanel("help")}>الدليل</Button>
       </nav>
-      <ExportActions />
+      <div className="flex items-center gap-1.5">
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={backupBusy}
+          onClick={() => void downloadBackup()}
+          title="تنزيل نسخة احتياطية شاملة تشمل التصميم والصور"
+          aria-label="نسخة احتياطية"
+        >
+          <Archive className="size-4" />
+          <span className="hidden sm:inline">نسخة احتياطية</span>
+        </Button>
+        <ExportActions />
+      </div>
     </div>
     {status === "error" ? <div role="alert" className="flex items-center justify-between gap-3 bg-red-50 px-4 py-2 text-sm text-red-800"><span>{errorMessage ?? "لم يُحفظ آخر تعديل. احتفظ بنسخة احتياطية قبل المغادرة."}</span><button onClick={() => void onSave()} className="shrink-0 underline">إعادة الحفظ</button></div> : null}
     <div className="flex items-center gap-1 overflow-x-auto border-t border-brand-border px-2 py-1">

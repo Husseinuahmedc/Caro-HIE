@@ -28,19 +28,37 @@ export function createDocumentFromTemplate(
   const brand = structuredClone(options.brand ?? DEFAULT_BRAND_SETTINGS);
   const framePresetId = options.framePresetId ?? "square";
   const frame = getFramePreset(framePresetId);
-  const plan: ContentPlan = {
-    goal: "شرح الفكرة بدون حشو",
-    audience: "صنّاع المحتوى والمطورون العرب",
-    hook: "ماذا يحدث فعلياً؟",
-    tone: "واضح ومباشر",
-    slides: template.roles.map((role, index) => ({
-      id: role.id,
-      role: role.id,
-      label: role.label,
-      hint: role.hint,
-      ...getRoleContentDefaults(role.id, index),
-    })),
-  };
+  const isBlank = templateId === "blank";
+  const plan: ContentPlan = isBlank
+    ? {
+        goal: "تصميم حر",
+        audience: "الجمهور",
+        hook: "",
+        tone: "مباشر",
+        slides: [
+          {
+            id: "blank-slide",
+            role: "custom",
+            label: "شريحة 1",
+            hint: "شريحة فارغة",
+            title: "",
+            body: "",
+          },
+        ],
+      }
+    : {
+        goal: "شرح الفكرة بدون حشو",
+        audience: "صنّاع المحتوى والمطورون العرب",
+        hook: "ماذا يحدث فعلياً؟",
+        tone: "واضح ومباشر",
+        slides: template.roles.map((role, index) => ({
+          id: role.id,
+          role: role.id,
+          label: role.label,
+          hint: role.hint,
+          ...getRoleContentDefaults(role.id, index),
+        })),
+      };
   const now = new Date().toISOString();
   return {
     schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -51,14 +69,23 @@ export function createDocumentFromTemplate(
     templateId: template.id,
     brandKitId: options.brandKitId ?? null,
     brand,
-    slides: template.roles.map((role, index) =>
-      createSlideFromTemplateRole({
-        role,
-        content: getRoleContentDefaults(role.id, index),
-        brand,
-        frame,
-      }),
-    ),
+    slides: isBlank
+      ? [
+          {
+            id: createDocumentId("slide"),
+            name: "شريحة 1",
+            role: "custom",
+            layers: [],
+          },
+        ]
+      : template.roles.map((role, index) =>
+          createSlideFromTemplateRole({
+            role,
+            content: getRoleContentDefaults(role.id, index),
+            brand,
+            frame,
+          }),
+        ),
     contentPlan: plan,
     revision: 0,
     createdAt: now,

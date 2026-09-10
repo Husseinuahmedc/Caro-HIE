@@ -6,7 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { FRAME_PRESETS, type FramePresetId } from "@/core/document";
-import { listTemplates } from "@/core/templates";
+import { blankTemplate, listTemplates } from "@/core/templates";
 import { TemplatePreview } from "./template-preview";
 
 const formSchema = z.object({
@@ -22,7 +22,7 @@ interface NewProjectFormProps {
 }
 
 export function NewProjectForm({ onCreate }: NewProjectFormProps) {
-  const templates = listTemplates();
+  const templates = [...listTemplates(), blankTemplate];
   const [formError, setFormError] = useState<string | null>(null);
   const { register, handleSubmit, control, setValue, formState } = useForm<NewProjectValues>({
     defaultValues: { name: "كاروسيل عربي جديد", templateId: templates[0]?.id ?? "tech-explainer", framePresetId: "square" },
@@ -56,7 +56,7 @@ export function NewProjectForm({ onCreate }: NewProjectFormProps) {
 
       <fieldset>
         <legend className="mb-4 text-sm font-black text-primary">بنية المحتوى</legend>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {templates.map((template) => {
             const selected = templateId === template.id;
             return (
@@ -82,7 +82,12 @@ export function NewProjectForm({ onCreate }: NewProjectFormProps) {
         </div>
       </fieldset>
       <div className="overflow-hidden border-y border-brand-border py-2">
-        <p className="text-sm text-brand-muted">معاينة {templates.find((template) => template.id === templateId)?.name} · {templates.find((template) => template.id === templateId)?.roles.length} شرائح قابلة للتعديل</p>
+        <p className="text-sm text-brand-muted">
+          معاينة {templates.find((template) => template.id === templateId)?.name} ·{" "}
+          {templateId === "blank"
+            ? "شريحة واحدة فارغة"
+            : `${templates.find((template) => template.id === templateId)?.roles.length} شرائح قابلة للتعديل`}
+        </p>
         <TemplatePreview templateId={templateId} framePresetId={framePresetId} />
       </div>
 
@@ -119,7 +124,11 @@ export function NewProjectForm({ onCreate }: NewProjectFormProps) {
           disabled={formState.isSubmitting}
           className="inline-flex h-[52px] items-center justify-center gap-2 rounded-lg bg-brand-accent px-6 text-sm font-black text-primary transition hover:-translate-y-0.5 hover:bg-[#22e3ec] disabled:pointer-events-none disabled:opacity-50"
         >
-          {formState.isSubmitting ? "جارٍ الإنشاء…" : "إنشاء وكتابة المحتوى"}
+          {formState.isSubmitting
+            ? "جارٍ الإنشاء…"
+            : templateId === "blank"
+              ? "إنشاء وبدء التصميم"
+              : "إنشاء وكتابة المحتوى"}
           {!formState.isSubmitting ? <ArrowLeft className="size-4" /> : null}
         </button>
       </div>
