@@ -152,9 +152,9 @@ function emptyContentPlan(slide: SlideDocument): ContentPlan {
         id: "cover",
         role: "cover",
         label: slide.name,
-        hint: "وعد واضح للقارئ",
-        title: "عنوان السلسلة هنا",
-        body: "وعد واضح للقارئ من أول نظرة",
+        hint: "أخطاء JavaScript الشائعة",
+        title: "أخطاء شائعة في JavaScript",
+        body: "لماذا الكود الخاص بك لا يعمل؟",
       },
     ],
   };

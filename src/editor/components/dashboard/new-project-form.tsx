@@ -91,7 +91,7 @@ export function NewProjectForm({ onCreate }: NewProjectFormProps) {
         <TemplatePreview templateId={templateId} framePresetId={framePresetId} />
       </div>
 
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <fieldset>
           <legend className="sr-only">مقاس الإطار</legend>
           <div className="flex flex-wrap gap-2">
@@ -119,18 +119,23 @@ export function NewProjectForm({ onCreate }: NewProjectFormProps) {
           </div>
         </fieldset>
 
-        <button
-          type="submit"
-          disabled={formState.isSubmitting}
-          className="inline-flex h-[52px] items-center justify-center gap-2 rounded-lg bg-brand-accent px-6 text-sm font-black text-primary transition hover:-translate-y-0.5 hover:bg-[#22e3ec] disabled:pointer-events-none disabled:opacity-50"
-        >
-          {formState.isSubmitting
-            ? "جارٍ الإنشاء…"
-            : templateId === "blank"
-              ? "إنشاء وبدء التصميم"
-              : "إنشاء وكتابة المحتوى"}
-          {!formState.isSubmitting ? <ArrowLeft className="size-4" /> : null}
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <a href="#projects" className="order-2 text-center text-sm font-bold text-brand-muted underline decoration-brand-border underline-offset-4 transition hover:text-primary sm:order-1">
+            متابعة مشروع محفوظ
+          </a>
+          <button
+            type="submit"
+            disabled={formState.isSubmitting}
+            className="order-1 inline-flex h-[52px] items-center justify-center gap-2 rounded-lg bg-brand-accent px-6 text-sm font-black text-primary transition hover:bg-[#22e3ec] disabled:pointer-events-none disabled:opacity-50 sm:order-2"
+          >
+            {formState.isSubmitting
+              ? "جارٍ الإنشاء…"
+              : templateId === "blank"
+                ? "إنشاء وبدء التصميم"
+                : "إنشاء وكتابة المحتوى"}
+            {!formState.isSubmitting ? <ArrowLeft className="size-4" /> : null}
+          </button>
+        </div>
       </div>
 
       <input type="hidden" {...register("templateId")} />

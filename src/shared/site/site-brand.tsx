@@ -16,11 +16,11 @@ export function SiteBrand({ compact = false, inverse = false, className }: SiteB
         alt=""
         width={40}
         height={40}
-        className="size-10 rounded-xl"
+        className="size-9 rounded-lg"
       />
       <span className="leading-tight">
         <strong className={cn("block text-base font-black tracking-tight", inverse ? "text-white" : "text-primary")}>Carousel Studio</strong>
-        {!compact ? <span className={cn("text-[11px]", inverse ? "text-white/60" : "text-brand-muted")}>منتج من sitehie</span> : null}
+        {!compact ? <span className={cn("text-[11px]", inverse ? "text-white/60" : "text-brand-muted")}>محرر كاروسيل عربي</span> : null}
       </span>
     </span>
   );

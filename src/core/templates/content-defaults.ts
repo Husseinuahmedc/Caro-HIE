@@ -5,12 +5,12 @@ export interface RoleContentDefaults {
 }
 
 const ROLE_CONTENT: Record<string, RoleContentDefaults> = {
-  cover: { title: "عنوان السلسلة هنا", body: "وعد واضح للقارئ من أول نظرة" },
-  problem: { title: "المشكلة خلف التفاصيل", body: "اكتب المشكلة التي يعيشها جمهورك بجملة قصيرة ومباشرة." },
-  explanation: { title: "لنشرح الفكرة", body: "اشرح الفكرة خطوة بخطوة، واجعل كل شريحة تحمل معنى واحداً." },
-  code: { title: "السطر المهم", body: "اقرأ الكود ضمن سياقه.", code: "const result = await doSomething()" },
-  summary: { title: "الخلاصة", body: "نقطة واحدة يتذكرها القارئ بعد قراءة السلسلة." },
-  cta: { title: "ما خطوتك التالية؟", body: "احفظها وجرّبها اليوم." },
+  cover: { title: "أخطاء شائعة في JavaScript", body: "لماذا الكود الخاص بك لا يعمل؟" },
+  problem: { title: "الخطأ مو دائماً من الكود نفسه", body: "قد تكون المشكلة في افتراضاتك عن التنفيذ غير المتزامن، أو شكل البيانات، أو ترتيب التنفيذ." },
+  explanation: { title: "افهم async / await", body: "تعلن async أن الدالة تعيد Promise، ويجعل await التنفيذ ينتظر النتيجة قبل الانتقال للسطر التالي." },
+  code: { title: "مثال عملي", body: "النسخة الأولى لا تنتظر اكتمال الطلب. استخدم await داخل دالة async.", code: "const data = fetchData();\n\nconsole.log(data);\n\n// تأكد من جلب البيانات قبل الاستمرار\n\nconst data = await fetchData();\n\nconsole.log(data);" },
+  summary: { title: "قبل / بعد", body: "قبل: تقرأ data قبل اكتمال الطلب. بعد: تنتظر fetchData ثم تتعامل مع النتيجة. أضف try/catch عند الحاجة." },
+  cta: { title: "هل واجهت هذا الخطأ؟", body: "احفظ السلسلة وشاركها!" },
   answer: { title: "الجواب: نعم، ولكن…", body: "ابدأ بالجواب ثم أضف السبب الذي يحتاجه القارئ." },
   why: { title: "لماذا يحدث هذا؟", body: "أعطِ سياقاً بسيطاً يربط السؤال بالنتيجة." },
   example: { title: "مثال سريع", body: "حوّل الفكرة إلى موقف أو مثال يمكن تخيله." },

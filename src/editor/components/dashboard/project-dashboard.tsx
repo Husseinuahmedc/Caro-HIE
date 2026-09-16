@@ -54,7 +54,7 @@ export function ProjectDashboard({ projects, onCreate, onOpen, onDelete, onImpor
           </div>
 
           {projects.length ? (
-            <div className="grid border-t border-brand-border sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid border-t border-brand-border sm:grid-cols-2 xl:grid-cols-3">
               {projects.map((project) => (
                 <ProjectCard
                   key={project.id}

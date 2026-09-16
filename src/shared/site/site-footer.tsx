@@ -1,5 +1,3 @@
-import { ArrowUpLeft } from "lucide-react";
-
 import { SiteBrand } from "./site-brand";
 
 const FOOTER_LINKS = [
@@ -19,12 +17,6 @@ export function SiteFooter() {
               {FOOTER_LINKS.map((link) => (
                 <li key={link.href}><a className="transition hover:text-brand-accent-strong" href={link.href}>{link.label}</a></li>
               ))}
-              <li>
-                <a className="inline-flex items-center gap-1 transition hover:text-brand-accent-strong" href="https://sitehie.info" target="_blank" rel="noreferrer">
-                  sitehie
-                  <ArrowUpLeft className="size-3.5" />
-                </a>
-              </li>
             </ul>
           </nav>
         </div>

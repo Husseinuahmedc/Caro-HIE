@@ -6,11 +6,11 @@ export const techExplainerTemplate: CarouselTemplate = {
   description: "فكرة تقنية مرتبة من المشكلة إلى الخلاصة.",
   icon: "⌘",
   roles: [
-    { id: "cover", label: "الغلاف", hint: "وعد واضح للقارئ", layout: "cover" },
-    { id: "problem", label: "المشكلة", hint: "لماذا يهم الموضوع؟", layout: "body" },
-    { id: "explanation", label: "الشرح", hint: "الفكرة بلغة بسيطة", layout: "body" },
-    { id: "code", label: "بطاقة كود", hint: "مثال قابل للحفظ", layout: "code" },
-    { id: "summary", label: "الخلاصة", hint: "أهم نقطة", layout: "body" },
-    { id: "cta", label: "الخطوة التالية", hint: "سؤال أو دعوة للفعل", layout: "cta" },
+    { id: "cover", label: "الغلاف", hint: "أخطاء JavaScript الشائعة", layout: "cover" },
+    { id: "problem", label: "المشكلة", hint: "مصدر الخطأ الحقيقي", layout: "body" },
+    { id: "explanation", label: "الشرح", hint: "انتظار البيانات", layout: "body" },
+    { id: "code", label: "مثال JavaScript", hint: "قبل وبعد", layout: "code" },
+    { id: "summary", label: "async / await", hint: "الخلاصة التقنية", layout: "body" },
+    { id: "cta", label: "دعوة للفعل", hint: "سؤال ومشاركة", layout: "cta" },
   ],
 };

@@ -121,7 +121,7 @@ const codeLayout: RoleLayoutFactory = ({ role, content, brand, frame }) => {
       y: top + availableHeight * 0.38,
       width: contentWidth,
       height: Math.min(430, availableHeight * 0.42),
-      code: content.code ?? "const result = await doSomething()",
+      code: content.code ?? "const data = await fetchData();\n\nconsole.log(data);",
       radius: brand.radius,
       background: brand.colors.codeBackground,
       color: brand.colors.codeText,
