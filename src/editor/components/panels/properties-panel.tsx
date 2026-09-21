@@ -15,7 +15,8 @@ import {
   Unlock,
 } from "lucide-react";
 
-import { type Layer } from "@/core/document";
+import { addLayerToSlide } from "@/editor/commands/document-operations";
+import { createImageLayer, type Layer } from "@/core/document";
 import {
   alignLayers,
   distributeLayers,
@@ -38,6 +39,7 @@ import { useEditorUiStore } from "@/editor/state/editor-ui-store";
 import { Button } from "@/shared/ui";
 import { storeAsset } from "@/storage";
 import { useEditorAssets } from "../workspace/editor-assets-context";
+import { fetchUnsplashImage } from "@/editor/image-import/unsplash";
 import { CodeProperties } from "./properties/code-properties";
 import { IconProperties } from "./properties/icon-properties";
 import { ImageProperties } from "./properties/image-properties";
@@ -280,6 +282,21 @@ export function PropertiesPanel() {
             onSelectFile={async (file) => {
               const asset = await storeAsset(document.id, file, file.name);
               patch({ assetId: asset.id } as Partial<Layer>, "إضافة صورة");
+              await reloadAssets();
+            }}
+            onImportUrl={async (value) => {
+              const { blob, name } = await fetchUnsplashImage(value);
+              const asset = await storeAsset(document.id, blob, name);
+              const imageLayer = createImageLayer({
+                assetId: asset.id,
+                name: "صورة من Unsplash",
+                alt: "صورة من Unsplash",
+              });
+              session.update(
+                (current) => addLayerToSlide(current, slide.id, imageLayer),
+                { label: "إضافة صورة من Unsplash", kind: "layer", affectedIds: [imageLayer.id] },
+              );
+              selectLayer(imageLayer.id);
               await reloadAssets();
             }}
           />
