@@ -1,25 +1,43 @@
 import { getFramePreset, type ProjectDocument } from "@/core/document";
-import { collectDocumentFontIds, loadDocumentFonts } from "@/fonts";
 import { serializeSlideToSvg } from "@/renderer";
-import { prepareExportAssets } from "../shared/prepare-export-assets";
-import { prepareExportFontCss } from "../shared/prepare-export-fonts";
+import {
+  prepareExportJob,
+  type ExportJobOptions,
+  type ExportResources,
+} from "../shared/export-job";
 import { renderSvgToPng } from "../png/render-svg-to-png";
-
-export async function exportProjectAsPdf(document: ProjectDocument): Promise<Blob> {
-  const [{ PDFDocument }, assets, , fontCss] = await Promise.all([
+export async function exportProjectAsPdf(
+  document: ProjectDocument,
+  options: ExportJobOptions = {},
+  resources?: ExportResources,
+): Promise<Blob> {
+  const [{ PDFDocument }, { assets, fontCss }] = await Promise.all([
     import("pdf-lib"),
-    prepareExportAssets(document),
-    loadDocumentFonts(collectDocumentFontIds(document)),
-    prepareExportFontCss(document),
+    resources ?? prepareExportJob(document, options.signal),
   ]);
-  const frame = getFramePreset(document.framePresetId);
-  const pdf = await PDFDocument.create();
-  for (const slide of document.slides) {
-    const png = await renderSvgToPng(serializeSlideToSvg(document, slide, assets, fontCss), frame.width, frame.height);
+  const frame = getFramePreset(document.framePresetId, document.customFrame),
+    pdf = await PDFDocument.create();
+  const slides = options.slides ?? document.slides;
+  for (const [index, slide] of slides.entries()) {
+    options.signal?.throwIfAborted();
+    const png = await renderSvgToPng(
+      serializeSlideToSvg(document, slide, assets, fontCss),
+      frame.width,
+      frame.height,
+    );
+    options.signal?.throwIfAborted();
     const embedded = await pdf.embedPng(await png.arrayBuffer());
-    const page = pdf.addPage([frame.width, frame.height]);
-    page.drawImage(embedded, { x: 0, y: 0, width: frame.width, height: frame.height });
+    pdf.addPage([frame.width, frame.height]).drawImage(embedded, {
+      x: 0,
+      y: 0,
+      width: frame.width,
+      height: frame.height,
+    });
+    options.onProgress?.(index + 1, slides.length);
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
-  const bytes = await pdf.save();
-  return new Blob([bytes as BlobPart], { type: "application/pdf" });
+  options.signal?.throwIfAborted();
+  return new Blob([(await pdf.save()) as BlobPart], {
+    type: "application/pdf",
+  });
 }

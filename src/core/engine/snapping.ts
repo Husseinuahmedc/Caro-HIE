@@ -1,4 +1,10 @@
-import { getFramePreset, type FramePresetId, type Layer, type SlideDocument } from "../document";
+import {
+  getFramePreset,
+  type FramePreset,
+  type FramePresetId,
+  type Layer,
+  type SlideDocument,
+} from "../document";
 
 export interface SnapGuide {
   axis: "x" | "y";
@@ -23,11 +29,16 @@ function closestSnap(
   targets: Anchor[],
   threshold: number,
 ) {
-  let best: { delta: number; guide: number; kind: SnapGuide["kind"] } | null = null;
+  let best: { delta: number; guide: number; kind: SnapGuide["kind"] } | null =
+    null;
   for (const moving of movingAnchors) {
     for (const target of targets) {
       const delta = target.position - moving.position;
-      if (Math.abs(delta) > threshold || (best && Math.abs(delta) >= Math.abs(best.delta))) continue;
+      if (
+        Math.abs(delta) > threshold ||
+        (best && Math.abs(delta) >= Math.abs(best.delta))
+      )
+        continue;
       best = { delta, guide: target.guide, kind: target.kind };
     }
   }
@@ -52,33 +63,53 @@ function layerAnchors(layer: Layer) {
 export function snapLayerPosition(
   proposedLayer: Layer,
   slide: SlideDocument,
-  framePresetId: FramePresetId,
+  framePresetId: FramePresetId | FramePreset,
   threshold = 14,
   ignoredLayerIds: string[] = [proposedLayer.id],
 ): SnappedPosition {
   const frame = getFramePreset(framePresetId);
   const ignored = new Set(ignoredLayerIds);
-  const xTargets: Anchor[] = [0, frame.width / 2, frame.width].map((position) => ({
-    position,
-    guide: position,
-    kind: "frame",
-  }));
-  const yTargets: Anchor[] = [0, frame.height / 2, frame.height].map((position) => ({
-    position,
-    guide: position,
-    kind: "frame",
-  }));
+  const xTargets: Anchor[] = [0, frame.width / 2, frame.width].map(
+    (position) => ({
+      position,
+      guide: position,
+      kind: "frame",
+    }),
+  );
+  const yTargets: Anchor[] = [0, frame.height / 2, frame.height].map(
+    (position) => ({
+      position,
+      guide: position,
+      kind: "frame",
+    }),
+  );
   for (const layer of slide.layers) {
     if (ignored.has(layer.id) || !layer.visible) continue;
     xTargets.push(
       { position: layer.x, guide: layer.x, kind: "layer" },
-      { position: layer.x + layer.width / 2, guide: layer.x + layer.width / 2, kind: "layer" },
-      { position: layer.x + layer.width, guide: layer.x + layer.width, kind: "layer" },
+      {
+        position: layer.x + layer.width / 2,
+        guide: layer.x + layer.width / 2,
+        kind: "layer",
+      },
+      {
+        position: layer.x + layer.width,
+        guide: layer.x + layer.width,
+        kind: "layer",
+      },
     );
     yTargets.push(
       { position: layer.y, guide: layer.y, kind: "layer" },
-      { position: layer.y + layer.height / 2, guide: layer.y + layer.height / 2, kind: "layer" },
-      { position: layer.y + layer.height, guide: layer.y + layer.height, kind: "layer" },
+      {
+        position: layer.y + layer.height / 2,
+        guide: layer.y + layer.height / 2,
+        kind: "layer",
+      },
+      {
+        position: layer.y + layer.height,
+        guide: layer.y + layer.height,
+        kind: "layer",
+      },
     );
   }
   const anchors = layerAnchors(proposedLayer);
@@ -88,8 +119,12 @@ export function snapLayerPosition(
     x: proposedLayer.x + (snapX?.delta ?? 0),
     y: proposedLayer.y + (snapY?.delta ?? 0),
     guides: [
-      ...(snapX ? [{ axis: "x" as const, value: snapX.guide, kind: snapX.kind }] : []),
-      ...(snapY ? [{ axis: "y" as const, value: snapY.guide, kind: snapY.kind }] : []),
+      ...(snapX
+        ? [{ axis: "x" as const, value: snapX.guide, kind: snapX.kind }]
+        : []),
+      ...(snapY
+        ? [{ axis: "y" as const, value: snapY.guide, kind: snapY.kind }]
+        : []),
     ],
   };
 }

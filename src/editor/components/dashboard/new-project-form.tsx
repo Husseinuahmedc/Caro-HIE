@@ -1,146 +1,211 @@
 "use client";
-
-import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-
 import { FRAME_PRESETS, type FramePresetId } from "@/core/document";
-import { blankTemplate, listTemplates } from "@/core/templates";
-import { TemplatePreview } from "./template-preview";
+import {
+  createDocumentFromTemplate,
+  listTemplates,
+  getVisualFamily,
+} from "@/core/templates";
+import { Button, Input, Label, Select } from "@/shared/ui";
+import { ArtworkPreview } from "./artwork-preview";
 
 const formSchema = z.object({
   name: z.string().trim().min(2, "اكتب اسماً أوضح للمشروع.").max(80),
   templateId: z.string().min(1),
-  framePresetId: z.enum(["square", "portrait", "story"]),
+  visualFamilyId: z.string().optional(),
+  framePresetId: z.enum([
+    "square",
+    "portrait",
+    "portrait34",
+    "story",
+    "custom",
+  ]),
+  slideCount: z
+    .number()
+    .int()
+    .positive()
+    .refine(Number.isSafeInteger, "أدخل عدداً صحيحاً موجباً."),
+  width: z.number().int().min(64).max(8192),
+  height: z.number().int().min(64).max(8192),
 });
-
 export type NewProjectValues = z.infer<typeof formSchema>;
-
-interface NewProjectFormProps {
+export function NewProjectForm({
+  onCreate,
+  visualFamilyId,
+  onBack,
+}: {
   onCreate: (values: NewProjectValues) => Promise<void>;
-}
-
-export function NewProjectForm({ onCreate }: NewProjectFormProps) {
-  const templates = [...listTemplates(), blankTemplate];
-  const [formError, setFormError] = useState<string | null>(null);
-  const { register, handleSubmit, control, setValue, formState } = useForm<NewProjectValues>({
-    defaultValues: { name: "كاروسيل عربي جديد", templateId: templates[0]?.id ?? "tech-explainer", framePresetId: "square" },
+  visualFamilyId?: string;
+  onBack?: () => void;
+}) {
+  const [name, setName] = useState("كاروسيل عربي جديد"),
+    [templateId, setTemplateId] = useState(
+      visualFamilyId ? "tech-explainer" : "blank",
+    ),
+    [framePresetId, setFrame] = useState<FramePresetId>("portrait"),
+    [slideCount, setCount] = useState(visualFamilyId ? "6" : "1"),
+    [width, setWidth] = useState(1080),
+    [height, setHeight] = useState(1350),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const family = getVisualFamily(visualFamilyId);
+  const preview = createDocumentFromTemplate(templateId, {
+    visualFamilyId,
+    framePresetId,
+    ...(framePresetId === "custom"
+      ? { customFrame: { width: Math.min(8192, Math.max(64, width || 64)), height: Math.min(8192, Math.max(64, height || 64)) } }
+      : {}),
+    slideCount: 3,
   });
-  const templateId = useWatch({ control, name: "templateId" });
-  const framePresetId = useWatch({ control, name: "framePresetId" });
-
   return (
-    <form
-      className="space-y-5"
-      onSubmit={handleSubmit(async (rawValues) => {
-        const parsed = formSchema.safeParse(rawValues);
-        if (!parsed.success) {
-          setFormError(parsed.error.issues[0]?.message ?? "راجع بيانات المشروع.");
-          return;
-        }
-        setFormError(null);
-        try { await onCreate(parsed.data); }
-        catch { setFormError("تعذر إنشاء المشروع. قد يكون التخزين ممتلئاً؛ نزّل نسخة من مشاريعك ثم أعد المحاولة."); }
-      })}
-    >
-      <label htmlFor="project-name" className="flex flex-col gap-3 border-b border-brand-border pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-sm font-black text-primary">اسم المشروع</span>
-        <input
-          id="project-name"
-          autoComplete="off"
-          className="min-w-0 rounded-lg border border-brand-border bg-surface-strong px-3 py-2 text-right text-base font-semibold text-primary focus-visible:ring-2 focus-visible:ring-brand-ring sm:w-2/3"
-          {...register("name")}
-        />
-      </label>
-
-      <fieldset>
-        <legend className="mb-4 text-sm font-black text-primary">بنية المحتوى</legend>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          {templates.map((template) => {
-            const selected = templateId === template.id;
-            return (
-              <button
-                key={template.id}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setValue("templateId", template.id)}
-                className={`group flex min-h-28 flex-col gap-2 rounded-lg border p-3 text-right outline-none transition focus-visible:ring-2 focus-visible:ring-brand-ring ${selected ? "border-primary bg-primary text-white" : "border-brand-border bg-surface-strong text-primary hover:bg-surface"}`}
-              >
-                <span className={`text-xl font-black ${selected ? "text-brand-accent" : "text-[#d96d4a]"}`} dir="ltr">
-                  {template.icon}
-                </span>
-                <span className="mt-auto">
-                  <strong className="block text-base font-black">{template.name}</strong>
-                  <span className={`mt-2 hidden text-sm leading-5 sm:block ${selected ? "text-white/80" : "text-brand-muted"}`}>
-                    {template.description}
-                  </span>
-                </span>
-              </button>
+    <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
+      <form
+        className="space-y-6"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          const parsed = formSchema.safeParse({
+            name,
+            templateId,
+            visualFamilyId,
+            framePresetId,
+            slideCount: Number(slideCount),
+            width,
+            height,
+          });
+          if (!parsed.success) {
+            setError(parsed.error.issues[0]?.message ?? "راجع بيانات المشروع.");
+            return;
+          }
+          setBusy(true);
+          setError("");
+          try {
+            await onCreate(parsed.data);
+          } catch {
+            setError(
+              "تعذر إنشاء المشروع. جرّب عدداً أقل من الشرائح أو حرّر مساحة التخزين، ثم أعد المحاولة.",
             );
-          })}
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        <div>
+          <Button type="button" variant="ghost" onClick={onBack}>
+            العودة إلى القوالب
+          </Button>
+          <h1 className="mt-4 text-3xl font-bold">ابدأ السلسلة بطريقتك.</h1>
+          <p className="mt-3 text-brand-muted">
+            {visualFamilyId ? family.name : "تصميم فارغ"} · يمكنك تعديل العدد
+            والتصميم لاحقاً.
+          </p>
         </div>
-      </fieldset>
-      <div className="overflow-hidden border-y border-brand-border py-2">
-        <p className="text-sm text-brand-muted">
-          معاينة {templates.find((template) => template.id === templateId)?.name} ·{" "}
-          {templateId === "blank"
-            ? "شريحة واحدة فارغة"
-            : `${templates.find((template) => template.id === templateId)?.roles.length} شرائح قابلة للتعديل`}
-        </p>
-        <TemplatePreview templateId={templateId} framePresetId={framePresetId} />
-      </div>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Label htmlFor="project-name">اسم المشروع</Label>
+          <Input
+            id="project-name"
+            value={name}
+            maxLength={80}
+            onChange={(event) => setName(event.target.value)}
+          />
+        </div>
         <fieldset>
-          <legend className="sr-only">مقاس الإطار</legend>
+          <legend className="mb-3 font-bold">مقاس المنشور</legend>
           <div className="flex flex-wrap gap-2">
-            {(Object.values(FRAME_PRESETS) as Array<(typeof FRAME_PRESETS)[FramePresetId]>).map((preset) => {
-              const selected = framePresetId === preset.id;
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => setValue("framePresetId", preset.id)}
-                  className={`flex h-12 items-center gap-2 rounded-md border px-4 text-xs font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-brand-ring ${selected ? "border-primary bg-brand-accent-soft text-primary" : "border-brand-border bg-surface-strong text-brand-muted hover:border-primary/30"}`}
-                >
-                  <span
-                    className="block rounded-[2px] border border-current"
-                    style={{
-                      width: preset.width >= preset.height ? 16 : 16 * (preset.width / preset.height),
-                      height: preset.height >= preset.width ? 16 : 16 * (preset.height / preset.width),
-                    }}
-                  />
-                  {preset.label}
-                </button>
-              );
-            })}
+            {Object.values(FRAME_PRESETS).map((preset) => (
+              <Button
+                key={preset.id}
+                type="button"
+                variant="secondary"
+                aria-pressed={framePresetId === preset.id}
+                onClick={() => setFrame(preset.id)}
+              >
+                {preset.label}
+              </Button>
+            ))}
           </div>
         </fieldset>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <a href="#projects" className="order-2 text-center text-sm font-bold text-brand-muted underline decoration-brand-border underline-offset-4 transition hover:text-primary sm:order-1">
-            متابعة مشروع محفوظ
-          </a>
-          <button
-            type="submit"
-            disabled={formState.isSubmitting}
-            className="order-1 inline-flex h-[52px] items-center justify-center gap-2 rounded-lg bg-brand-accent px-6 text-sm font-black text-primary transition hover:bg-[#22e3ec] disabled:pointer-events-none disabled:opacity-50 sm:order-2"
-          >
-            {formState.isSubmitting
-              ? "جارٍ الإنشاء…"
-              : templateId === "blank"
-                ? "إنشاء وبدء التصميم"
-                : "إنشاء وكتابة المحتوى"}
-            {!formState.isSubmitting ? <ArrowLeft className="size-4" /> : null}
-          </button>
+        {framePresetId === "custom" ? (
+          <div className="grid grid-cols-2 gap-4">
+            <label>
+              العرض بالبكسل
+              <Input
+                type="number"
+                min={64}
+                max={8192}
+                value={width}
+                onChange={(event) => setWidth(Number(event.target.value))}
+                dir="ltr"
+              />
+            </label>
+            <label>
+              الارتفاع بالبكسل
+              <Input
+                type="number"
+                min={64}
+                max={8192}
+                value={height}
+                onChange={(event) => setHeight(Number(event.target.value))}
+                dir="ltr"
+              />
+            </label>
+          </div>
+        ) : null}
+        <div>
+          <Label htmlFor="slide-count">عدد الشرائح</Label>
+          <Input
+            id="slide-count"
+            type="number"
+            min={1}
+            step={1}
+            value={slideCount}
+            onChange={(event) => setCount(event.target.value)}
+            dir="ltr"
+          />
+          <p className="mt-2 text-sm text-brand-muted">
+            اختر العدد الذي تحتاجه، ويشمل الغلاف والخاتمة. لا يوجد حد ثابت
+            للمشروع.
+          </p>
         </div>
-      </div>
-
-      <input type="hidden" {...register("templateId")} />
-      <input type="hidden" {...register("framePresetId")} />
-      {formError ? <p className="text-sm font-semibold text-red-600">{formError}</p> : null}
-    </form>
+        <div>
+          <Label htmlFor="content-outline">بنية المحتوى</Label>
+          <Select
+            id="content-outline"
+            value={templateId}
+            onChange={(event) => setTemplateId(event.target.value)}
+          >
+            <option value="blank">بدون محتوى — تصميم فارغ</option>
+            {listTemplates().map((template) => (
+              <option key={template.id} value={template.id}>
+                {template.name}
+              </option>
+            ))}
+          </Select>
+          <p className="mt-2 text-sm text-brand-muted">
+            البنية ترتّب أفكارك؛ القالب يحدد شكلها.
+          </p>
+        </div>
+        {error ? (
+          <p role="alert" className="text-red-800">
+            {error}
+          </p>
+        ) : null}
+        <Button type="submit" disabled={busy} className="min-h-12 w-full">
+          {busy
+            ? "جارٍ الإنشاء…"
+            : templateId === "blank"
+              ? "إنشاء وبدء التصميم"
+              : "إنشاء وكتابة المحتوى"}
+        </Button>
+      </form>
+      <aside className="bg-[#E9ECE5] p-6 sm:p-8">
+        <div className="mx-auto max-w-[380px]">
+          <ArtworkPreview document={preview} />
+        </div>
+        <p className="mt-4 text-center text-sm text-brand-muted">
+          مثال قابل للتعديل · النصوص للمعاينة
+        </p>
+      </aside>
+    </div>
   );
 }

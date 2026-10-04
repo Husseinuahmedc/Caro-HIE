@@ -1,30 +1,27 @@
-import { SiteBrand } from "./site-brand";
-
-const FOOTER_LINKS = [
-  { href: "#new-project", label: "مشروع جديد" },
-  { href: "#projects", label: "المشاريع" },
-  { href: "#features", label: "المزايا" },
-];
-
-export function SiteFooter() {
+"use client";
+export function SiteFooter({
+  onCreate,
+  onGallery,
+}: {
+  onCreate?: () => void;
+  onGallery?: () => void;
+}) {
   return (
-    <footer className="border-t border-brand-border bg-surface-strong text-primary" aria-label="تذييل الموقع">
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-8 lg:px-12">
-        <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
-          <SiteBrand />
-          <nav aria-label="روابط التذييل">
-            <ul className="flex flex-wrap gap-x-7 gap-y-3 text-xs font-black">
-              {FOOTER_LINKS.map((link) => (
-                <li key={link.href}><a className="transition hover:text-brand-accent-strong" href={link.href}>{link.label}</a></li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-
-        <div className="mt-8 flex flex-col gap-2 border-t border-brand-border pt-5 text-[11px] text-brand-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>Carousel Studio © 2026</span>
-          <span className="font-bold text-primary">صُمم وطُوّر في بغداد <span className="text-brand-accent-strong">●</span></span>
-        </div>
+    <footer className="border-t border-brand-border px-4 py-6 text-sm text-brand-muted sm:px-8 lg:px-12">
+      <div className="mx-auto flex max-w-[1344px] flex-wrap items-center justify-between gap-4">
+        <span>Carousel Studio · بغداد</span>
+        <nav className="flex items-center gap-6" aria-label="روابط التذييل">
+          <button className="min-h-11" onClick={onCreate}>
+            مشروع جديد
+          </button>
+          <button className="min-h-11" onClick={onGallery}>
+            القوالب
+          </button>
+          <a href="#projects" className="flex min-h-11 items-center">
+            المشاريع
+          </a>
+        </nav>
+        <span className="text-xs">مجاني · بدون حساب</span>
       </div>
     </footer>
   );

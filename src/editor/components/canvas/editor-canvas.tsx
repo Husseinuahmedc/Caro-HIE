@@ -1,31 +1,70 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import { flattenLayers, getFramePreset } from "@/core/document";
-import { findLayerContext, getAbsoluteLayerBounds, patchLayer, type ResizeHandle } from "@/core/engine";
+import {
+  findLayerContext,
+  getAbsoluteLayerBounds,
+  patchLayer,
+  type ResizeHandle,
+} from "@/core/engine";
 import { useCanvasInteractions } from "@/editor/hooks/use-canvas-interactions";
-import { useProjectDocument, useDocumentSession } from "@/editor/hooks/use-document-session";
+import {
+  useProjectDocument,
+  useDocumentSession,
+} from "@/editor/hooks/use-document-session";
 import { applySlideOperation } from "@/editor/commands";
 import { InlineTextEditor } from "./inline-text-editor";
 import { TextQuickTools } from "./text-quick-tools";
 import { useEditorUiStore } from "@/editor/state/editor-ui-store";
 import { SlideRenderer } from "@/renderer";
 import { useEditorAssets } from "../workspace/editor-assets-context";
-import { CanvasToolbar } from "./canvas-toolbar";
 
-const RESIZE_HANDLES: ResizeHandle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+const RESIZE_HANDLES: ResizeHandle[] = [
+  "nw",
+  "n",
+  "ne",
+  "e",
+  "se",
+  "s",
+  "sw",
+  "w",
+];
 
 function handlePosition(handle: ResizeHandle): CSSProperties {
-  const horizontal = handle.includes("w") ? "0%" : handle.includes("e") ? "100%" : "50%";
-  const vertical = handle.includes("n") ? "0%" : handle.includes("s") ? "100%" : "50%";
-  return { left: horizontal, top: vertical, transform: "translate(-50%, -50%)" };
+  const horizontal = handle.includes("w")
+    ? "0%"
+    : handle.includes("e")
+      ? "100%"
+      : "50%";
+  const vertical = handle.includes("n")
+    ? "0%"
+    : handle.includes("s")
+      ? "100%"
+      : "50%";
+  return {
+    left: horizontal,
+    top: vertical,
+    transform: "translate(-50%, -50%)",
+  };
 }
 
-export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) {
+export function EditorCanvas({
+  onSave,
+}: { onSave?: () => Promise<void> } = {}) {
   const document = useProjectDocument();
   const session = useDocumentSession();
-  const [editing, setEditing] = useState<{ slideId: string; layerId: string } | null>(null);
+  const [editing, setEditing] = useState<{
+    slideId: string;
+    layerId: string;
+  } | null>(null);
   const { assetUrls } = useEditorAssets();
   const activeSlideId = useEditorUiStore((state) => state.activeSlideId);
   const selectedLayerIds = useEditorUiStore((state) => state.selectedLayerIds);
@@ -34,13 +73,24 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
   const snapGuides = useEditorUiStore((state) => state.snapGuides);
   const clearSelection = useEditorUiStore((state) => state.clearSelection);
   const frameElementRef = useRef<HTMLDivElement | null>(null);
-  const slide = document.slides.find((entry) => entry.id === activeSlideId) ?? document.slides[0]!;
-  const frame = getFramePreset(document.framePresetId);
-  const entries = useMemo(() => flattenLayers(slide.layers).filter(({ layer }) => layer.visible), [slide]);
-  const interactions = useCanvasInteractions({ document, slide, zoom, frameElementRef });
+  const slide =
+    document.slides.find((entry) => entry.id === activeSlideId) ??
+    document.slides[0]!;
+  const frame = getFramePreset(document.framePresetId, document.customFrame);
+  const entries = useMemo(
+    () => flattenLayers(slide.layers).filter(({ layer }) => layer.visible),
+    [slide],
+  );
+  const interactions = useCanvasInteractions({
+    document,
+    slide,
+    zoom,
+    frameElementRef,
+  });
 
   useEffect(() => {
-    if (activeSlideId !== slide.id) useEditorUiStore.getState().setActiveSlide(slide.id);
+    if (activeSlideId !== slide.id)
+      useEditorUiStore.getState().setActiveSlide(slide.id);
   }, [activeSlideId, slide.id]);
 
   const [prevSlideId, setPrevSlideId] = useState(slide.id);
@@ -60,18 +110,43 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
   }, [session]);
 
   const selectedBounds = selectedLayerIds
-    .map((id) => ({ id, bounds: getAbsoluteLayerBounds(slide, id), context: findLayerContext(slide.layers, id) }))
+    .map((id) => ({
+      id,
+      bounds: getAbsoluteLayerBounds(slide, id),
+      context: findLayerContext(slide.layers, id),
+    }))
     .filter((entry) => entry.bounds && entry.context);
-  const singleSelection = selectedBounds.length === 1 ? selectedBounds[0] : null;
-  const editingContext = editing?.slideId === slide.id ? findLayerContext(slide.layers, editing.layerId) : null;
-  const editingLayer = editingContext?.layer.type === "text" && !editingContext.layer.locked && !editingContext.parentLocked ? editingContext.layer : null;
-  const editingBounds = editingLayer ? getAbsoluteLayerBounds(slide, editingLayer.id) : null;
+  const singleSelection =
+    selectedBounds.length === 1 ? selectedBounds[0] : null;
+  const editingContext =
+    editing?.slideId === slide.id
+      ? findLayerContext(slide.layers, editing.layerId)
+      : null;
+  const editingLayer =
+    editingContext?.layer.type === "text" &&
+    !editingContext.layer.locked &&
+    !editingContext.parentLocked
+      ? editingContext.layer
+      : null;
+  const editingBounds = editingLayer
+    ? getAbsoluteLayerBounds(slide, editingLayer.id)
+    : null;
 
   function startEditing(layerId: string) {
     const context = findLayerContext(slide.layers, layerId);
-    if (!context || context.layer.type !== "text" || context.layer.locked || context.parentLocked) return;
+    if (
+      !context ||
+      context.layer.type !== "text" ||
+      context.layer.locked ||
+      context.parentLocked
+    )
+      return;
     if (session.isTransactionOpen) session.commitTransaction();
-    session.beginTransaction({ label: "تحرير النص", kind: "content", affectedIds: [layerId] });
+    session.beginTransaction({
+      label: "تحرير النص",
+      kind: "content",
+      affectedIds: [layerId],
+    });
     setEditing({ slideId: slide.id, layerId });
   }
 
@@ -79,8 +154,8 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
     if (!editingLayer || !session.isTransactionOpen) return;
     session.replaceTransientDocument(
       applySlideOperation(session.getSnapshot(), slide.id, (source) =>
-        patchLayer(source, editingLayer.id, { content: text })
-      )
+        patchLayer(source, editingLayer.id, { content: text }),
+      ),
     );
   }
 
@@ -89,15 +164,22 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
       if (editingLayer) {
         session.replaceTransientDocument(
           applySlideOperation(session.getSnapshot(), slide.id, (source) =>
-            patchLayer(source, editingLayer.id, { content: finalText })
-          )
+            patchLayer(source, editingLayer.id, { content: finalText }),
+          ),
         );
       }
       session.commitTransaction();
     } else if (editingLayer) {
       session.update(
-        (current) => applySlideOperation(current, slide.id, (source) => patchLayer(source, editingLayer.id, { content: finalText })),
-        { label: "تحرير النص", kind: "content", affectedIds: [editingLayer.id] }
+        (current) =>
+          applySlideOperation(current, slide.id, (source) =>
+            patchLayer(source, editingLayer.id, { content: finalText }),
+          ),
+        {
+          label: "تحرير النص",
+          kind: "content",
+          affectedIds: [editingLayer.id],
+        },
       );
     }
     setEditing(null);
@@ -111,15 +193,82 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
   }
 
   return (
-    <main data-editor-canvas className="relative min-w-0 flex-1 overflow-auto bg-background" onPointerMove={interactions.updateInteraction} onPointerUp={(event) => interactions.endInteraction(event)} onPointerCancel={(event) => interactions.endInteraction(event, true)}>
-      <CanvasToolbar />
-      <div className="grid min-h-full min-w-max place-items-center p-6 pt-28" onPointerDown={(event) => { if (event.target === event.currentTarget) clearSelection(); }}>
-        <div className="relative shadow-[0_4px_24px_rgba(25,69,75,0.1)]" style={{ width: frame.width * zoom, height: frame.height * zoom }}>
-          {!editingLayer && singleSelection?.context?.layer.type === "text" && !singleSelection.context.layer.locked && !singleSelection.context.parentLocked ? <TextQuickTools layer={singleSelection.context.layer} slideId={slide.id} onEdit={() => startEditing(singleSelection.id)} /> : null}
-          <div ref={frameElementRef} data-canvas-frame className="absolute left-0 top-0 origin-top-left select-none" dir="ltr" style={{ width: frame.width, height: frame.height, transform: `scale(${zoom})` }}>
-            <SlideRenderer document={document} slide={slide} assetUrls={assetUrls} editingLayerId={editingLayer?.id} />
-            {showSafeArea ? <div className="pointer-events-none absolute z-20 border border-dashed border-primary/40" style={{ left: frame.safeArea.left, top: frame.safeArea.top, right: frame.safeArea.right, bottom: frame.safeArea.bottom }} /> : null}
-            {snapGuides.map((guide, index) => <div key={`${guide.axis}-${guide.value}-${index}`} className="pointer-events-none absolute z-30 bg-sky-500" style={guide.axis === "x" ? { left: guide.value, top: 0, width: 2, height: frame.height } : { top: guide.value, left: 0, height: 2, width: frame.width }} />)}
+    <main
+      data-editor-canvas
+      className="relative min-w-0 flex-1 overflow-auto bg-background"
+      onPointerMove={interactions.updateInteraction}
+      onPointerUp={(event) => interactions.endInteraction(event)}
+      onPointerCancel={(event) => interactions.endInteraction(event, true)}
+    >
+      <div
+        className="grid min-h-full min-w-max place-items-center p-6 pt-28"
+        onPointerDown={(event) => {
+          if (event.target === event.currentTarget) clearSelection();
+        }}
+      >
+        <div
+          className="relative shadow-[0_4px_24px_rgba(25,69,75,0.1)]"
+          style={{ width: frame.width * zoom, height: frame.height * zoom }}
+        >
+          {!editingLayer &&
+          singleSelection?.context?.layer.type === "text" &&
+          !singleSelection.context.layer.locked &&
+          !singleSelection.context.parentLocked ? (
+            <TextQuickTools
+              layer={singleSelection.context.layer}
+              slideId={slide.id}
+              onEdit={() => startEditing(singleSelection.id)}
+            />
+          ) : null}
+          <div
+            ref={frameElementRef}
+            data-canvas-frame
+            className="absolute left-0 top-0 origin-top-left select-none"
+            dir="ltr"
+            style={{
+              width: frame.width,
+              height: frame.height,
+              transform: `scale(${zoom})`,
+            }}
+          >
+            <SlideRenderer
+              document={document}
+              slide={slide}
+              assetUrls={assetUrls}
+              editingLayerId={editingLayer?.id}
+            />
+            {showSafeArea ? (
+              <div
+                className="pointer-events-none absolute z-20 border border-dashed border-primary/40"
+                style={{
+                  left: frame.safeArea.left,
+                  top: frame.safeArea.top,
+                  right: frame.safeArea.right,
+                  bottom: frame.safeArea.bottom,
+                }}
+              />
+            ) : null}
+            {snapGuides.map((guide, index) => (
+              <div
+                key={`${guide.axis}-${guide.value}-${index}`}
+                className="pointer-events-none absolute z-30 bg-sky-500"
+                style={
+                  guide.axis === "x"
+                    ? {
+                        left: guide.value,
+                        top: 0,
+                        width: 2,
+                        height: frame.height,
+                      }
+                    : {
+                        top: guide.value,
+                        left: 0,
+                        height: 2,
+                        width: frame.width,
+                      }
+                }
+              />
+            ))}
             {entries.map(({ layer }, index) => {
               const bounds = getAbsoluteLayerBounds(slide, layer.id);
               if (!bounds) return null;
@@ -133,14 +282,22 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
                     top: bounds.y,
                     width: bounds.width,
                     height: bounds.height,
-                    transform: layer.rotation ? `rotate(${layer.rotation}deg)` : undefined,
+                    transform: layer.rotation
+                      ? `rotate(${layer.rotation}deg)`
+                      : undefined,
                     transformOrigin: "center",
                     zIndex: 40 + index,
                   }}
-                  onPointerDown={(event) => interactions.beginMove(event, layer.id)}
+                  onPointerDown={(event) =>
+                    interactions.beginMove(event, layer.id)
+                  }
                   onDoubleClick={() => {
                     const context = findLayerContext(slide.layers, layer.id);
-                    if (layer.type === "text" && !layer.locked && !context?.parentLocked) {
+                    if (
+                      layer.type === "text" &&
+                      !layer.locked &&
+                      !context?.parentLocked
+                    ) {
                       startEditing(layer.id);
                     }
                   }}
@@ -157,13 +314,19 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
                     top: bounds.y,
                     width: bounds.width,
                     height: bounds.height,
-                    transform: context.layer.rotation ? `rotate(${context.layer.rotation}deg)` : undefined,
+                    transform: context.layer.rotation
+                      ? `rotate(${context.layer.rotation}deg)`
+                      : undefined,
                     transformOrigin: "center",
                   }}
                 />
-              ) : null
+              ) : null,
             )}
-            {!editingLayer && singleSelection?.bounds && singleSelection.context && !singleSelection.context.layer.locked && !singleSelection.context.parentLocked ? (
+            {!editingLayer &&
+            singleSelection?.bounds &&
+            singleSelection.context &&
+            !singleSelection.context.layer.locked &&
+            !singleSelection.context.parentLocked ? (
               <div
                 className="pointer-events-none absolute z-[210]"
                 style={{
@@ -171,7 +334,9 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
                   top: singleSelection.bounds.y,
                   width: singleSelection.bounds.width,
                   height: singleSelection.bounds.height,
-                  transform: singleSelection.context.layer.rotation ? `rotate(${singleSelection.context.layer.rotation}deg)` : undefined,
+                  transform: singleSelection.context.layer.rotation
+                    ? `rotate(${singleSelection.context.layer.rotation}deg)`
+                    : undefined,
                   transformOrigin: "center",
                 }}
               >
@@ -181,21 +346,46 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
                     type="button"
                     aria-label={`تغيير الحجم ${handle}`}
                     className="pointer-events-auto absolute grid touch-none place-items-center"
-                    style={{ ...handlePosition(handle), width: 32 / zoom, height: 32 / zoom }}
-                    onPointerDown={(event) => interactions.beginResize(event, singleSelection.id, handle)}
+                    style={{
+                      ...handlePosition(handle),
+                      width: 32 / zoom,
+                      height: 32 / zoom,
+                    }}
+                    onPointerDown={(event) =>
+                      interactions.beginResize(
+                        event,
+                        singleSelection.id,
+                        handle,
+                      )
+                    }
                   >
-                    <span className="rounded-full border border-white bg-brand-accent-strong" style={{ width: 9 / zoom, height: 9 / zoom }} />
+                    <span
+                      className="rounded-full border border-white bg-brand-accent-strong"
+                      style={{ width: 9 / zoom, height: 9 / zoom }}
+                    />
                   </button>
                 ))}
-                <span className="absolute left-1/2 w-px -translate-x-1/2 bg-brand-accent-strong" style={{ top: -28 / zoom, height: 28 / zoom }} />
+                <span
+                  className="absolute left-1/2 w-px -translate-x-1/2 bg-brand-accent-strong"
+                  style={{ top: -28 / zoom, height: 28 / zoom }}
+                />
                 <button
                   type="button"
                   aria-label="تدوير العنصر"
                   className="pointer-events-auto absolute left-1/2 grid -translate-x-1/2 touch-none place-items-center"
-                  style={{ top: -44 / zoom, width: 32 / zoom, height: 32 / zoom }}
-                  onPointerDown={(event) => interactions.beginRotate(event, singleSelection.id)}
+                  style={{
+                    top: -44 / zoom,
+                    width: 32 / zoom,
+                    height: 32 / zoom,
+                  }}
+                  onPointerDown={(event) =>
+                    interactions.beginRotate(event, singleSelection.id)
+                  }
                 >
-                  <span className="rounded-full border border-white bg-brand-accent-strong" style={{ width: 10 / zoom, height: 10 / zoom }} />
+                  <span
+                    className="rounded-full border border-white bg-brand-accent-strong"
+                    style={{ width: 10 / zoom, height: 10 / zoom }}
+                  />
                 </button>
               </div>
             ) : null}
@@ -208,7 +398,9 @@ export function EditorCanvas({ onSave }: { onSave?: () => Promise<void> } = {}) 
                   top: editingBounds.y,
                   width: editingBounds.width,
                   height: editingBounds.height,
-                  transform: editingLayer.rotation ? `rotate(${editingLayer.rotation}deg)` : undefined,
+                  transform: editingLayer.rotation
+                    ? `rotate(${editingLayer.rotation}deg)`
+                    : undefined,
                   transformOrigin: "center",
                 }}
               >

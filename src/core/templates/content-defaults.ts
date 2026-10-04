@@ -2,6 +2,7 @@ export interface RoleContentDefaults {
   title: string;
   body: string;
   code?: string;
+  after?: string;
 }
 
 const ROLE_CONTENT: Record<string, RoleContentDefaults> = {

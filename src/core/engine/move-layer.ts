@@ -1,4 +1,9 @@
-import { getFramePreset, type FramePresetId, type SlideDocument } from "../document";
+import {
+  getFramePreset,
+  type FramePreset,
+  type FramePresetId,
+  type SlideDocument,
+} from "../document";
 import { findLayerContext, updateLayerInTree } from "./layer-tree";
 import { clampNumber } from "./numbers";
 import type { LayerOperationResult } from "./operation-result";
@@ -12,10 +17,11 @@ export function moveLayer(
   slide: SlideDocument,
   layerId: string,
   delta: PointDelta,
-  framePresetId: FramePresetId,
+  framePresetId: FramePresetId | FramePreset,
 ): LayerOperationResult {
   const context = findLayerContext(slide.layers, layerId);
-  if (!context || context.layer.locked || context.parentLocked) return { slide, changed: false };
+  if (!context || context.layer.locked || context.parentLocked)
+    return { slide, changed: false };
   const container = context.parent ?? getFramePreset(framePresetId);
   const nextX = clampNumber(
     context.layer.x + delta.x,
@@ -27,7 +33,8 @@ export function moveLayer(
     0,
     Math.max(0, container.height - context.layer.height),
   );
-  if (nextX === context.layer.x && nextY === context.layer.y) return { slide, changed: false };
+  if (nextX === context.layer.x && nextY === context.layer.y)
+    return { slide, changed: false };
   return {
     slide: {
       ...slide,

@@ -7,3 +7,5 @@ export * from "./ids";
 export * from "./migrations";
 export * from "./schema";
 export * from "./types";
+
+export * from "./slide-presentation";

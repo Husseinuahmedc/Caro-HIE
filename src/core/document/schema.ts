@@ -5,13 +5,14 @@ import {
   CODE_THEMES,
   CURRENT_SCHEMA_VERSION,
   ICON_NAMES,
-  MAX_SLIDES,
   type GroupLayer,
   type Layer,
   type ProjectDocument,
 } from "./types";
 
-const colorSchema = z.string().regex(/^#[0-9a-f]{6}$/i, "Expected a six-digit hex color");
+const colorSchema = z
+  .string()
+  .regex(/^#[0-9a-f]{6}$/i, "Expected a six-digit hex color");
 const finiteNumber = z.number().finite();
 
 const layerBaseSchema = z.object({
@@ -39,7 +40,7 @@ export const textLayerSchema = layerBaseSchema.extend({
   lineHeight: finiteNumber.min(0.7).max(3),
   letterSpacing: finiteNumber.min(-20).max(100),
   color: colorSchema,
-  contentKey: z.enum(["title", "body"]).optional(),
+  contentKey: z.enum(["title", "body", "slide-number"]).optional(),
 });
 
 export const codeLayerSchema = layerBaseSchema.extend({
@@ -139,31 +140,49 @@ export const contentPlanSchema = z.object({
   ),
 });
 
-export const projectDocumentSchema: z.ZodType<ProjectDocument> = z.object({
-  schemaVersion: z.literal(CURRENT_SCHEMA_VERSION),
-  id: z.string().min(1),
-  name: z.string().min(1),
-  series: z.string(),
-  framePresetId: z.enum(["square", "portrait", "story"]),
-  templateId: z.string().min(1),
-  brandKitId: z.string().min(1).nullable(),
-  brand: brandSettingsSchema,
-  slides: z
-    .array(
-      z.object({
-        id: z.string().min(1),
-        name: z.string().min(1),
-        role: z.string().optional(),
-        layers: z.array(layerSchema),
-      }),
-    )
-    .min(1)
-    .max(MAX_SLIDES),
-  contentPlan: contentPlanSchema,
-  revision: z.number().int().nonnegative(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
+export const projectDocumentSchema: z.ZodType<ProjectDocument> = z
+  .object({
+    schemaVersion: z.literal(CURRENT_SCHEMA_VERSION),
+    id: z.string().min(1),
+    name: z.string().min(1),
+    series: z.string(),
+    framePresetId: z.enum([
+      "square",
+      "portrait",
+      "portrait34",
+      "story",
+      "custom",
+    ]),
+    templateId: z.string().min(1),
+    visualFamilyId: z.string().min(1).optional(),
+    customFrame: z
+      .object({
+        width: z.number().int().min(64).max(8192),
+        height: z.number().int().min(64).max(8192),
+      })
+      .optional(),
+    brandKitId: z.string().min(1).nullable(),
+    brand: brandSettingsSchema,
+    slides: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          name: z.string().min(1),
+          role: z.string().optional(),
+          layers: z.array(layerSchema),
+        }),
+      )
+      .min(1),
+    contentPlan: contentPlanSchema,
+    revision: z.number().int().nonnegative(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .refine(
+    (document) =>
+      document.framePresetId !== "custom" || document.customFrame !== undefined,
+    { message: "Custom dimensions are required", path: ["customFrame"] },
+  );
 
 export function parseProjectDocument(input: unknown): ProjectDocument {
   return projectDocumentSchema.parse(input);

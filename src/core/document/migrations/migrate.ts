@@ -3,6 +3,7 @@ import { CURRENT_SCHEMA_VERSION, type ProjectDocument } from "../types";
 import { isRecord } from "./migration-values";
 import { migrateVersionOneToTwo, type ExtractedLegacyAsset } from "./v1-to-v2";
 import { migrateVersionTwoToThree } from "./v2-to-v3";
+import { migrateVersionFourToFive } from "./v4-to-v5";
 import { migrateVersionThreeToFour } from "./v3-to-v4";
 
 export interface DocumentMigrationResult {
@@ -18,14 +19,29 @@ export class UnsupportedDocumentVersionError extends Error {
   }
 }
 
-export function migrateProjectDocument(input: unknown): DocumentMigrationResult {
+export function migrateProjectDocument(
+  input: unknown,
+): DocumentMigrationResult {
   if (!isRecord(input)) throw new Error("Project document must be an object.");
-  const version = typeof input.schemaVersion === "number" ? input.schemaVersion : 1;
-  if (version > CURRENT_SCHEMA_VERSION) throw new UnsupportedDocumentVersionError(version);
+  const version =
+    typeof input.schemaVersion === "number" ? input.schemaVersion : 1;
+  if (version > CURRENT_SCHEMA_VERSION)
+    throw new UnsupportedDocumentVersionError(version);
 
   if (version === CURRENT_SCHEMA_VERSION) {
-    return { document: parseProjectDocument(input), extractedAssets: [], migratedFrom: version };
+    return {
+      document: parseProjectDocument(input),
+      extractedAssets: [],
+      migratedFrom: version,
+    };
   }
+
+  if (version === 4)
+    return {
+      document: migrateVersionFourToFive(input),
+      extractedAssets: [],
+      migratedFrom: version,
+    };
 
   if (version === 3) {
     return {
@@ -45,7 +61,9 @@ export function migrateProjectDocument(input: unknown): DocumentMigrationResult 
 
   const versionTwo = migrateVersionOneToTwo(input);
   return {
-    document: migrateVersionThreeToFour(migrateVersionTwoToThree(versionTwo.document)),
+    document: migrateVersionThreeToFour(
+      migrateVersionTwoToThree(versionTwo.document),
+    ),
     extractedAssets: versionTwo.extractedAssets,
     migratedFrom: version,
   };

@@ -15,6 +15,20 @@ export const FRAME_PRESETS: Record<FramePresetId, FramePreset> = {
     height: 1350,
     safeArea: { top: 90, right: 72, bottom: 108, left: 72 },
   },
+  portrait34: {
+    id: "portrait34",
+    label: "عمودي 3:4",
+    width: 1080,
+    height: 1440,
+    safeArea: { top: 90, right: 72, bottom: 108, left: 72 },
+  },
+  custom: {
+    id: "custom",
+    label: "مقاس مخصص",
+    width: 1080,
+    height: 1350,
+    safeArea: { top: 90, right: 72, bottom: 90, left: 72 },
+  },
   story: {
     id: "story",
     label: "ستوري 9:16",
@@ -24,6 +38,17 @@ export const FRAME_PRESETS: Record<FramePresetId, FramePreset> = {
   },
 };
 
-export function getFramePreset(id: FramePresetId): FramePreset {
-  return FRAME_PRESETS[id];
+export function getFramePreset(
+  id: FramePresetId | FramePreset,
+  custom?: { width: number; height: number },
+): FramePreset {
+  if (typeof id !== "string") return id;
+  if (id !== "custom" || !custom) return FRAME_PRESETS[id];
+  const margin = Math.min(custom.width, custom.height) * 0.067;
+  return {
+    id,
+    label: "مقاس مخصص",
+    ...custom,
+    safeArea: { top: margin, right: margin, bottom: margin, left: margin },
+  };
 }
