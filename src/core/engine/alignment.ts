@@ -1,16 +1,30 @@
-import { getFramePreset, type FramePresetId, type Layer, type SlideDocument } from "../document";
+import {
+  getFramePreset,
+  type FramePreset,
+  type FramePresetId,
+  type Layer,
+  type SlideDocument,
+} from "../document";
 import { getSelectionBounds } from "./bounds";
 import type { LayerOperationResult } from "./operation-result";
 
-export type AlignmentMode = "left" | "center-x" | "right" | "top" | "center-y" | "bottom";
+export type AlignmentMode =
+  "left" | "center-x" | "right" | "top" | "center-y" | "bottom";
 export type DistributionMode = "horizontal" | "vertical";
 
-function alignedPosition(layer: Layer, mode: AlignmentMode, target: { x: number; y: number; width: number; height: number }) {
+function alignedPosition(
+  layer: Layer,
+  mode: AlignmentMode,
+  target: { x: number; y: number; width: number; height: number },
+) {
   if (mode === "left") return { x: target.x, y: layer.y };
-  if (mode === "center-x") return { x: target.x + (target.width - layer.width) / 2, y: layer.y };
-  if (mode === "right") return { x: target.x + target.width - layer.width, y: layer.y };
+  if (mode === "center-x")
+    return { x: target.x + (target.width - layer.width) / 2, y: layer.y };
+  if (mode === "right")
+    return { x: target.x + target.width - layer.width, y: layer.y };
   if (mode === "top") return { x: layer.x, y: target.y };
-  if (mode === "center-y") return { x: layer.x, y: target.y + (target.height - layer.height) / 2 };
+  if (mode === "center-y")
+    return { x: layer.x, y: target.y + (target.height - layer.height) / 2 };
   return { x: layer.x, y: target.y + target.height - layer.height };
 }
 
@@ -18,12 +32,17 @@ export function alignLayers(
   slide: SlideDocument,
   layerIds: string[],
   mode: AlignmentMode,
-  framePresetId: FramePresetId,
+  framePresetId: FramePresetId | FramePreset,
 ): LayerOperationResult {
   const selectedIds = new Set(layerIds);
-  const selected = slide.layers.filter((layer) => selectedIds.has(layer.id) && !layer.locked);
+  const selected = slide.layers.filter(
+    (layer) => selectedIds.has(layer.id) && !layer.locked,
+  );
   if (!selected.length) return { slide, changed: false };
-  const selectionBounds = getSelectionBounds(slide, selected.map((layer) => layer.id));
+  const selectionBounds = getSelectionBounds(
+    slide,
+    selected.map((layer) => layer.id),
+  );
   const frame = getFramePreset(framePresetId);
   const target =
     selected.length === 1
@@ -76,7 +95,9 @@ export function distributeLayers(
       layers: slide.layers.map((layer) => {
         const position = positions.get(layer.id);
         if (position === undefined) return layer;
-        return mode === "horizontal" ? { ...layer, x: position } : { ...layer, y: position };
+        return mode === "horizontal"
+          ? { ...layer, x: position }
+          : { ...layer, y: position };
       }),
     },
     changed: true,

@@ -85,7 +85,9 @@ export function createCodeLayer(overrides: Partial<CodeLayer> = {}): CodeLayer {
   };
 }
 
-export function createShapeLayer(overrides: Partial<ShapeLayer> = {}): ShapeLayer {
+export function createShapeLayer(
+  overrides: Partial<ShapeLayer> = {},
+): ShapeLayer {
   return {
     ...baseLayer(),
     id: createDocumentId("shape"),
@@ -114,7 +116,7 @@ export function createIconLayer(overrides: Partial<IconLayer> = {}): IconLayer {
     y: 80,
     width: 120,
     height: 120,
-    icon: "sparkles",
+    icon: "star",
     color: DEFAULT_BRAND_SETTINGS.colors.accent,
     fill: "none",
     strokeWidth: 2,
@@ -123,7 +125,9 @@ export function createIconLayer(overrides: Partial<IconLayer> = {}): IconLayer {
   };
 }
 
-export function createImageLayer(overrides: Partial<ImageLayer> = {}): ImageLayer {
+export function createImageLayer(
+  overrides: Partial<ImageLayer> = {},
+): ImageLayer {
   return {
     ...baseLayer(),
     id: createDocumentId("image"),

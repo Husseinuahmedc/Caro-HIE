@@ -2,18 +2,18 @@
 @import "tw-animate-css";
 
 :root {
-  --background: #f0eee9;
-  --foreground: #19454b;
-  --surface: #fbfaf7;
+  --background: #F6F5F1;
+  --foreground: #222823;
+  --surface: #F6F5F1;
   --surface-strong: #ffffff;
   --primary: #19454b;
   --primary-hover: #123a3f;
   --primary-foreground: #ffffff;
   --accent: #0ad8e2;
-  --accent-soft: #dff7f7;
+  --accent-soft: #E5F5F2;
   --accent-strong: #067983;
-  --muted: #66777a;
-  --border: #d9d6cf;
+  --muted: #62685F;
+  --border: #DDDFD6;
   --ring: #0aa9b2;
   color-scheme: light;
 }
@@ -76,8 +76,8 @@ select:not(:disabled) {
 
 ::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
-  border-radius: 999px;
-  background: #aebbb9;
+  border-radius: 8px;
+  background: var(--muted);
   background-clip: padding-box;
 }
 
@@ -95,3 +95,12 @@ select:not(:disabled) {
     transition-duration: 0.01ms !important;
   }
 }
+
+@font-face { font-family: "DM Sans"; src: url("/fonts/dm-sans/variable.ttf") format("truetype"); font-weight: 100 900; font-display: swap; }
+.brand-wordmark { font-family: "DM Sans", var(--font-application), sans-serif; font-weight: 700; font-size: 20px; color: var(--primary); }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+input, textarea { caret-color: var(--primary); }
+body { font-size: 14px; line-height: 1.5; }
+a { text-underline-offset: 4px; }
+button, a, input, select, textarea { transition-duration: 180ms; }
+.artwork-preview { container-type: inline-size; }

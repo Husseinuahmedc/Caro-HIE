@@ -2,7 +2,16 @@ import { create } from "zustand";
 
 import type { SnapGuide } from "@/core/engine";
 
-export type EditorPanel = "layers" | "properties" | "planner" | "brand" | "preflight" | "help" | "navigation";
+export type EditorPanel =
+  | "layers"
+  | "properties"
+  | "planner"
+  | "brand"
+  | "preflight"
+  | "help"
+  | "navigation"
+  | "visual"
+  | "export";
 export type EditorTool = "select" | "text" | "shape" | "image";
 
 interface EditorUiState {
@@ -41,14 +50,16 @@ export const useEditorUiStore = create<EditorUiState>((set) => ({
   inspectorOpen: false,
   setInspectorOpen: (inspectorOpen) => set({ inspectorOpen }),
   snapGuides: [],
-  setActiveSlide: (slideId) => set({ activeSlideId: slideId, selectedLayerIds: [] }),
-  selectLayer: (layerId, additive = false) => set((state) => ({
-    selectedLayerIds: additive
-      ? state.selectedLayerIds.includes(layerId)
-        ? state.selectedLayerIds.filter((id) => id !== layerId)
-        : [...state.selectedLayerIds, layerId]
-      : [layerId],
-  })),
+  setActiveSlide: (slideId) =>
+    set({ activeSlideId: slideId, selectedLayerIds: [] }),
+  selectLayer: (layerId, additive = false) =>
+    set((state) => ({
+      selectedLayerIds: additive
+        ? state.selectedLayerIds.includes(layerId)
+          ? state.selectedLayerIds.filter((id) => id !== layerId)
+          : [...state.selectedLayerIds, layerId]
+        : [layerId],
+    })),
   clearSelection: () => set({ selectedLayerIds: [] }),
   setZoom: (zoom) => set({ zoom: Math.min(2, Math.max(0.1, zoom)) }),
   setOpenPanel: (openPanel) => set({ openPanel }),

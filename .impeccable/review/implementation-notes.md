@@ -1,0 +1,12 @@
+Implementation notes: User approved the Figma plan on 4 October 2026. Main scope implemented in a dedicated feature branch. No deploy or merge performed.
+- Six distinct native-layer visual families, separate from content outlines; authored example content from approved Figma.
+- Flexible positive integer initial counts; no MAX_SLIDES guards. Persistence, backup import and history tests at 1,9,10,20,24,100.
+- Schema-v5 with compatible v4 upgrade preserving content and appearance. 3:4 and custom geometry propagated through editor engine/render/export.
+- Dedicated selected-slide writing view, live preview, RTL desktop navigator, mobile filmstrip and bottom tools.
+- Family switch preview, retained content, undoable apply.
+- Shared per-job resources, sequential PNG/SVG/PDF, original project numbering for ranges, padded names, cancellation, optional 20-slide output groups.
+- Lazy thumbnails, actual saved-project previews, bundled OFL Noto Sans Arabic/IBM Plex Mono/DM Sans.
+- Desktop and mobile Playwright production captures; initial pass fixes: numbering fields removed, safe-area composition corrected, sample copy varied, dead footer links replaced.
+- Detector ran once: four advisories (scrollbar radius/color corrected; 36px mobile display intentional; unused old template-preview 10px advisory outside live flow). No hard anti-pattern findings.
+- Fresh finish review identified three corrections, now implemented: preserve extra code/duplicated keyed text on family changes; independently editable before/after comparison regions; actual custom-size setup preview.
+- Final verification: pnpm check passed lint, typecheck, 90 unit tests and production build; 22 Playwright browser tests passed. Desktop/mobile captures and visual regression snapshots refreshed after the correction batch.

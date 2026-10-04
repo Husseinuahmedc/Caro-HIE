@@ -1,4 +1,9 @@
-import { getFramePreset, type FramePresetId, type SlideDocument } from "../document";
+import {
+  getFramePreset,
+  type FramePreset,
+  type FramePresetId,
+  type SlideDocument,
+} from "../document";
 import { findLayerContext, updateLayerInTree } from "./layer-tree";
 import { clampNumber } from "./numbers";
 import type { LayerOperationResult } from "./operation-result";
@@ -18,10 +23,11 @@ export function resizeLayer(
   slide: SlideDocument,
   layerId: string,
   rectangle: LayerRectangle,
-  framePresetId: FramePresetId,
+  framePresetId: FramePresetId | FramePreset,
 ): LayerOperationResult {
   const context = findLayerContext(slide.layers, layerId);
-  if (!context || context.layer.locked || context.parentLocked) return { slide, changed: false };
+  if (!context || context.layer.locked || context.parentLocked)
+    return { slide, changed: false };
   const container = context.parent ?? getFramePreset(framePresetId);
 
   let { x, y, width, height } = rectangle;
@@ -31,8 +37,16 @@ export function resizeLayer(
   if (!context.layer.rotation) {
     x = clampNumber(x, 0, Math.max(0, container.width - MIN_LAYER_SIZE));
     y = clampNumber(y, 0, Math.max(0, container.height - MIN_LAYER_SIZE));
-    width = clampNumber(width, MIN_LAYER_SIZE, Math.max(MIN_LAYER_SIZE, container.width - x));
-    height = clampNumber(height, MIN_LAYER_SIZE, Math.max(MIN_LAYER_SIZE, container.height - y));
+    width = clampNumber(
+      width,
+      MIN_LAYER_SIZE,
+      Math.max(MIN_LAYER_SIZE, container.width - x),
+    );
+    height = clampNumber(
+      height,
+      MIN_LAYER_SIZE,
+      Math.max(MIN_LAYER_SIZE, container.height - y),
+    );
   }
 
   if (
@@ -67,12 +81,14 @@ export function rectangleFromResizeDelta(
   const rotation = source.rotation ?? 0;
   if (!rotation) {
     let { x, y, width, height } = source;
-    if (handle.includes("e")) width = Math.max(MIN_LAYER_SIZE, source.width + deltaX);
+    if (handle.includes("e"))
+      width = Math.max(MIN_LAYER_SIZE, source.width + deltaX);
     if (handle.includes("w")) {
       width = Math.max(MIN_LAYER_SIZE, source.width - deltaX);
       x = source.x + source.width - width;
     }
-    if (handle.includes("s")) height = Math.max(MIN_LAYER_SIZE, source.height + deltaY);
+    if (handle.includes("s"))
+      height = Math.max(MIN_LAYER_SIZE, source.height + deltaY);
     if (handle.includes("n")) {
       height = Math.max(MIN_LAYER_SIZE, source.height - deltaY);
       y = source.y + source.height - height;

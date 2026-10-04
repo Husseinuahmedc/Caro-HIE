@@ -16,7 +16,9 @@ export function EditorInspector() {
         className="hidden w-72 shrink-0 flex-col border-r border-brand-border bg-surface-strong lg:flex xl:w-80"
         aria-label="خصائص العنصر"
       >
-        <h2 className="border-b border-brand-border px-4 py-3 text-sm font-bold">خصائص العنصر</h2>
+        <h2 className="border-b border-brand-border px-4 py-3 text-sm font-bold">
+          خصائص العنصر
+        </h2>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <PropertiesPanel />
         </div>
@@ -34,7 +36,9 @@ export function EditorInspector() {
         >
           <div className="flex shrink-0 items-center justify-between border-b border-brand-border px-4 py-2.5">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-primary">خصائص العنصر</span>
+              <span className="text-sm font-bold text-primary">
+                خصائص العنصر
+              </span>
               <Button
                 type="button"
                 variant="ghost"
@@ -58,7 +62,7 @@ export function EditorInspector() {
             </div>
             <button
               type="button"
-              className="grid size-9 place-items-center rounded-lg hover:bg-background text-stone-600"
+              className="grid size-11 place-items-center rounded-lg hover:bg-background text-stone-600"
               aria-label="إغلاق"
               onClick={() => setInspectorOpen(false)}
             >
@@ -73,4 +77,3 @@ export function EditorInspector() {
     </>
   );
 }
-

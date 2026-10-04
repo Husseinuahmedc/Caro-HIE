@@ -1,5 +1,4 @@
-export const CURRENT_SCHEMA_VERSION = 4 as const;
-export const MAX_SLIDES = 9 as const;
+export const CURRENT_SCHEMA_VERSION = 5 as const;
 
 export const CODE_LANGUAGES = [
   "typescript",
@@ -14,7 +13,12 @@ export const CODE_LANGUAGES = [
   "bash",
   "text",
 ] as const;
-export const CODE_THEMES = ["midnight", "github-dark", "sand", "paper"] as const;
+export const CODE_THEMES = [
+  "midnight",
+  "github-dark",
+  "sand",
+  "paper",
+] as const;
 export const ICON_NAMES = [
   "sparkles",
   "star",
@@ -54,7 +58,8 @@ export const ICON_NAMES = [
   "arrow-down",
 ] as const;
 
-export type FramePresetId = "square" | "portrait" | "story";
+export type FramePresetId =
+  "square" | "portrait" | "portrait34" | "story" | "custom";
 export type TextDirection = "rtl" | "ltr";
 export type TextAlignment = "right" | "center" | "left";
 export type VerticalAlignment = "top" | "middle" | "bottom";
@@ -89,7 +94,7 @@ export interface TextLayer extends LayerBase {
   lineHeight: number;
   letterSpacing: number;
   color: string;
-  contentKey?: "title" | "body";
+  contentKey?: "title" | "body" | "slide-number";
 }
 
 export interface CodeLayer extends LayerBase {
@@ -141,12 +146,7 @@ export interface GroupLayer extends LayerBase {
 }
 
 export type Layer =
-  | TextLayer
-  | CodeLayer
-  | ShapeLayer
-  | IconLayer
-  | ImageLayer
-  | GroupLayer;
+  TextLayer | CodeLayer | ShapeLayer | IconLayer | ImageLayer | GroupLayer;
 
 export interface SlideDocument {
   id: string;
@@ -201,6 +201,8 @@ export interface ProjectDocument {
   series: string;
   framePresetId: FramePresetId;
   templateId: string;
+  visualFamilyId?: string;
+  customFrame?: { width: number; height: number };
   brandKitId: string | null;
   brand: BrandSettings;
   slides: SlideDocument[];

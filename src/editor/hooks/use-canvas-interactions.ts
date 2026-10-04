@@ -1,6 +1,11 @@
 "use client";
+import { getFramePreset } from "@/core/document";
 
-import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import {
+  useRef,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from "react";
 
 import type { ProjectDocument, SlideDocument } from "@/core/document";
 import {
@@ -28,8 +33,17 @@ interface BaseInteraction {
 
 type CanvasInteraction =
   | (BaseInteraction & { type: "move"; layerIds: string[] })
-  | (BaseInteraction & { type: "resize"; layerId: string; handle: ResizeHandle })
-  | (BaseInteraction & { type: "rotate"; layerId: string; startAngle: number; sourceRotation: number });
+  | (BaseInteraction & {
+      type: "resize";
+      layerId: string;
+      handle: ResizeHandle;
+    })
+  | (BaseInteraction & {
+      type: "rotate";
+      layerId: string;
+      startAngle: number;
+      sourceRotation: number;
+    });
 
 interface CanvasInteractionOptions {
   document: ProjectDocument;
@@ -38,35 +52,78 @@ interface CanvasInteractionOptions {
   frameElementRef: RefObject<HTMLDivElement | null>;
 }
 
-export function useCanvasInteractions({ document, slide, zoom, frameElementRef }: CanvasInteractionOptions) {
+export function useCanvasInteractions({
+  document,
+  slide,
+  zoom,
+  frameElementRef,
+}: CanvasInteractionOptions) {
   const session = useDocumentSession();
   const selectLayer = useEditorUiStore((state) => state.selectLayer);
   const setSnapGuides = useEditorUiStore((state) => state.setSnapGuides);
   const setOpenPanel = useEditorUiStore((state) => state.setOpenPanel);
   const interactionRef = useRef<CanvasInteraction | null>(null);
 
-  function beginMove(event: ReactPointerEvent<HTMLDivElement>, layerId: string) {
+  function beginMove(
+    event: ReactPointerEvent<HTMLDivElement>,
+    layerId: string,
+  ) {
     event.stopPropagation();
     const context = findLayerContext(slide.layers, layerId);
     const existingSelection = useEditorUiStore.getState().selectedLayerIds;
-    if (event.shiftKey || !existingSelection.includes(layerId)) selectLayer(layerId, event.shiftKey);
+    if (event.shiftKey || !existingSelection.includes(layerId))
+      selectLayer(layerId, event.shiftKey);
     setOpenPanel("properties");
     if (!context || context.layer.locked || context.parentLocked) return;
     const currentSelection = useEditorUiStore.getState().selectedLayerIds;
-    const layerIds = currentSelection.includes(layerId) ? currentSelection : [layerId];
-    session.beginTransaction({ label: "تحريك عناصر", kind: "layer", affectedIds: layerIds });
-    interactionRef.current = { type: "move", sourceDocument: document, sourceSlide: slide, startClientX: event.clientX, startClientY: event.clientY, pointerId: event.pointerId, layerIds };
+    const layerIds = currentSelection.includes(layerId)
+      ? currentSelection
+      : [layerId];
+    session.beginTransaction({
+      label: "تحريك عناصر",
+      kind: "layer",
+      affectedIds: layerIds,
+    });
+    interactionRef.current = {
+      type: "move",
+      sourceDocument: document,
+      sourceSlide: slide,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      pointerId: event.pointerId,
+      layerIds,
+    };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
-  function beginResize(event: ReactPointerEvent<HTMLButtonElement>, layerId: string, handle: ResizeHandle) {
+  function beginResize(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    layerId: string,
+    handle: ResizeHandle,
+  ) {
     event.stopPropagation();
-    session.beginTransaction({ label: "تغيير حجم عنصر", kind: "layer", affectedIds: [layerId] });
-    interactionRef.current = { type: "resize", sourceDocument: document, sourceSlide: slide, startClientX: event.clientX, startClientY: event.clientY, pointerId: event.pointerId, layerId, handle };
+    session.beginTransaction({
+      label: "تغيير حجم عنصر",
+      kind: "layer",
+      affectedIds: [layerId],
+    });
+    interactionRef.current = {
+      type: "resize",
+      sourceDocument: document,
+      sourceSlide: slide,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      pointerId: event.pointerId,
+      layerId,
+      handle,
+    };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
-  function beginRotate(event: ReactPointerEvent<HTMLButtonElement>, layerId: string) {
+  function beginRotate(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    layerId: string,
+  ) {
     event.stopPropagation();
     const bounds = getAbsoluteLayerBounds(slide, layerId);
     const context = findLayerContext(slide.layers, layerId);
@@ -74,7 +131,11 @@ export function useCanvasInteractions({ document, slide, zoom, frameElementRef }
     if (!bounds || !context || !rect) return;
     const centerX = rect.left + (bounds.x + bounds.width / 2) * zoom;
     const centerY = rect.top + (bounds.y + bounds.height / 2) * zoom;
-    session.beginTransaction({ label: "تدوير عنصر", kind: "layer", affectedIds: [layerId] });
+    session.beginTransaction({
+      label: "تدوير عنصر",
+      kind: "layer",
+      affectedIds: [layerId],
+    });
     interactionRef.current = {
       type: "rotate",
       sourceDocument: document,
@@ -83,7 +144,9 @@ export function useCanvasInteractions({ document, slide, zoom, frameElementRef }
       startClientY: event.clientY,
       pointerId: event.pointerId,
       layerId,
-      startAngle: Math.atan2(event.clientY - centerY, event.clientX - centerX) * 180 / Math.PI,
+      startAngle:
+        (Math.atan2(event.clientY - centerY, event.clientX - centerX) * 180) /
+        Math.PI,
       sourceRotation: context.layer.rotation,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -97,46 +160,104 @@ export function useCanvasInteractions({ document, slide, zoom, frameElementRef }
     let nextSlide = interaction.sourceSlide;
     if (interaction.type === "move") {
       if (interaction.layerIds.length > 1) {
-        nextSlide = moveSelectedLayers(interaction.sourceSlide, interaction.layerIds, { x: deltaX, y: deltaY }, document.framePresetId).slide;
+        nextSlide = moveSelectedLayers(
+          interaction.sourceSlide,
+          interaction.layerIds,
+          { x: deltaX, y: deltaY },
+          getFramePreset(document.framePresetId, document.customFrame),
+        ).slide;
         setSnapGuides([]);
       } else {
         const layerId = interaction.layerIds[0];
         if (!layerId) return;
-        let result = moveLayer(interaction.sourceSlide, layerId, { x: deltaX, y: deltaY }, document.framePresetId);
-        if (interaction.sourceSlide.layers.some((layer) => layer.id === layerId)) {
+        let result = moveLayer(
+          interaction.sourceSlide,
+          layerId,
+          { x: deltaX, y: deltaY },
+          getFramePreset(document.framePresetId, document.customFrame),
+        );
+        if (
+          interaction.sourceSlide.layers.some((layer) => layer.id === layerId)
+        ) {
           const moved = findLayerContext(result.slide.layers, layerId)?.layer;
-          const original = findLayerContext(interaction.sourceSlide.layers, layerId)?.layer;
+          const original = findLayerContext(
+            interaction.sourceSlide.layers,
+            layerId,
+          )?.layer;
           if (moved && original) {
-            const snapped = snapLayerPosition(moved, interaction.sourceSlide, document.framePresetId, 14 / zoom, [layerId]);
-            result = moveLayer(interaction.sourceSlide, layerId, { x: snapped.x - original.x, y: snapped.y - original.y }, document.framePresetId);
+            const snapped = snapLayerPosition(
+              moved,
+              interaction.sourceSlide,
+              getFramePreset(document.framePresetId, document.customFrame),
+              14 / zoom,
+              [layerId],
+            );
+            result = moveLayer(
+              interaction.sourceSlide,
+              layerId,
+              { x: snapped.x - original.x, y: snapped.y - original.y },
+              getFramePreset(document.framePresetId, document.customFrame),
+            );
             setSnapGuides(snapped.guides);
           }
         }
         nextSlide = result.slide;
       }
     } else if (interaction.type === "resize") {
-      const layer = findLayerContext(interaction.sourceSlide.layers, interaction.layerId)?.layer;
+      const layer = findLayerContext(
+        interaction.sourceSlide.layers,
+        interaction.layerId,
+      )?.layer;
       if (!layer) return;
-      nextSlide = resizeLayer(interaction.sourceSlide, interaction.layerId, rectangleFromResizeDelta(layer, interaction.handle, deltaX, deltaY), document.framePresetId).slide;
+      nextSlide = resizeLayer(
+        interaction.sourceSlide,
+        interaction.layerId,
+        rectangleFromResizeDelta(layer, interaction.handle, deltaX, deltaY),
+        getFramePreset(document.framePresetId, document.customFrame),
+      ).slide;
     } else {
-      const bounds = getAbsoluteLayerBounds(interaction.sourceSlide, interaction.layerId);
+      const bounds = getAbsoluteLayerBounds(
+        interaction.sourceSlide,
+        interaction.layerId,
+      );
       const rect = frameElementRef.current?.getBoundingClientRect();
       if (!bounds || !rect) return;
       const centerX = rect.left + (bounds.x + bounds.width / 2) * zoom;
       const centerY = rect.top + (bounds.y + bounds.height / 2) * zoom;
-      const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX) * 180 / Math.PI;
-      nextSlide = rotateLayer(interaction.sourceSlide, interaction.layerId, interaction.sourceRotation + angle - interaction.startAngle).slide;
+      const angle =
+        (Math.atan2(event.clientY - centerY, event.clientX - centerX) * 180) /
+        Math.PI;
+      nextSlide = rotateLayer(
+        interaction.sourceSlide,
+        interaction.layerId,
+        interaction.sourceRotation + angle - interaction.startAngle,
+      ).slide;
     }
-    session.replaceTransientDocument(replaceSlide(interaction.sourceDocument, nextSlide));
+    session.replaceTransientDocument(
+      replaceSlide(interaction.sourceDocument, nextSlide),
+    );
   }
 
-  function endInteraction(event: ReactPointerEvent<HTMLElement>, cancel = false) {
-    if (!interactionRef.current || event.pointerId !== interactionRef.current.pointerId) return;
+  function endInteraction(
+    event: ReactPointerEvent<HTMLElement>,
+    cancel = false,
+  ) {
+    if (
+      !interactionRef.current ||
+      event.pointerId !== interactionRef.current.pointerId
+    )
+      return;
     interactionRef.current = null;
     setSnapGuides([]);
     if (cancel) session.cancelTransaction();
     else session.commitTransaction();
   }
 
-  return { beginMove, beginResize, beginRotate, updateInteraction, endInteraction };
+  return {
+    beginMove,
+    beginResize,
+    beginRotate,
+    updateInteraction,
+    endInteraction,
+  };
 }

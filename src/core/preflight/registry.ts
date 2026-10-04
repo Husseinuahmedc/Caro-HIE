@@ -19,9 +19,11 @@ export const PREFLIGHT_RULES: readonly PreflightRule[] = [
 ];
 
 export function runPreflight(document: ProjectDocument): PreflightIssue[] {
-  const frame = getFramePreset(document.framePresetId);
+  const frame = getFramePreset(document.framePresetId, document.customFrame);
   return PREFLIGHT_RULES.flatMap((rule) => {
     if (rule.scope === "document") return rule.run({ document, frame });
-    return document.slides.flatMap((slide) => rule.run({ document, frame, slide }));
+    return document.slides.flatMap((slide) =>
+      rule.run({ document, frame, slide }),
+    );
   });
 }

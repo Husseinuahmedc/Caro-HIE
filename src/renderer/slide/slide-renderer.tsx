@@ -2,7 +2,11 @@
 
 import { memo } from "react";
 
-import { getFramePreset, type ProjectDocument, type SlideDocument } from "@/core/document";
+import {
+  getFramePreset, getSlidePresentationLayers,
+  type ProjectDocument,
+  type SlideDocument,
+} from "@/core/document";
 import { LayerRenderer } from "../layers/layer-renderer";
 
 interface SlideRendererProps {
@@ -15,8 +19,14 @@ interface SlideRendererProps {
 
 const EMPTY_ASSET_URLS: ReadonlyMap<string, string> = new Map();
 
-function SlideRendererComponent({ document, slide, assetUrls = EMPTY_ASSET_URLS, className, editingLayerId }: SlideRendererProps) {
-  const frame = getFramePreset(document.framePresetId);
+function SlideRendererComponent({
+  document,
+  slide,
+  assetUrls = EMPTY_ASSET_URLS,
+  className,
+  editingLayerId,
+}: SlideRendererProps) {
+  const frame = getFramePreset(document.framePresetId, document.customFrame);
   return (
     <div
       className={className}
@@ -31,7 +41,14 @@ function SlideRendererComponent({ document, slide, assetUrls = EMPTY_ASSET_URLS,
         color: document.brand.colors.text,
       }}
     >
-      {slide.layers.map((layer) => <LayerRenderer key={layer.id} layer={layer} assetUrls={assetUrls} editingLayerId={editingLayerId} />)}
+      {getSlidePresentationLayers(document, slide).map((layer) => (
+        <LayerRenderer
+          key={layer.id}
+          layer={layer}
+          assetUrls={assetUrls}
+          editingLayerId={editingLayerId}
+        />
+      ))}
     </div>
   );
 }
@@ -40,9 +57,11 @@ export const SlideRenderer = memo(
   SlideRendererComponent,
   (previous, next) =>
     previous.slide === next.slide &&
+    previous.document.slides === next.document.slides &&
     previous.assetUrls === next.assetUrls &&
     previous.document.framePresetId === next.document.framePresetId &&
     previous.document.brand === next.document.brand &&
+    previous.document.customFrame === next.document.customFrame &&
     previous.className === next.className &&
     previous.editingLayerId === next.editingLayerId,
 );

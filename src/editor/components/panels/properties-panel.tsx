@@ -1,4 +1,5 @@
 "use client";
+import { getFramePreset } from "@/core/document";
 
 import {
   ArrowDown,
@@ -34,7 +35,10 @@ import {
   ungroupSelection,
 } from "@/editor/commands";
 import { applySlideOperation } from "@/editor/commands/document-operations";
-import { useDocumentSession, useProjectDocument } from "@/editor/hooks/use-document-session";
+import {
+  useDocumentSession,
+  useProjectDocument,
+} from "@/editor/hooks/use-document-session";
 import { useEditorUiStore } from "@/editor/state/editor-ui-store";
 import { Button } from "@/shared/ui";
 import { storeAsset } from "@/storage";
@@ -43,7 +47,11 @@ import { fetchUnsplashImage } from "@/editor/image-import/unsplash";
 import { CodeProperties } from "./properties/code-properties";
 import { IconProperties } from "./properties/icon-properties";
 import { ImageProperties } from "./properties/image-properties";
-import { NumberField, PropertiesSection, TextField } from "./properties/property-fields";
+import {
+  NumberField,
+  PropertiesSection,
+  TextField,
+} from "./properties/property-fields";
 import { ShapeProperties } from "./properties/shape-properties";
 import { TextProperties } from "./properties/text-properties";
 import type { PatchLayer } from "./properties/types";
@@ -71,18 +79,56 @@ function MultipleSelection({
     <div className="space-y-5 p-4">
       <div>
         <h3 className="font-black">{count} عناصر محددة</h3>
-        <p className="mt-1 text-xs text-stone-500">حاذِ العناصر أو وزّعها أو اجمعها كعملية واحدة.</p>
+        <p className="mt-1 text-xs text-stone-500">
+          حاذِ العناصر أو وزّعها أو اجمعها كعملية واحدة.
+        </p>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <Button variant="secondary" size="sm" onClick={() => onAlign("right")}>يمين</Button>
-        <Button variant="secondary" size="sm" onClick={() => onAlign("center-x")}>وسط</Button>
-        <Button variant="secondary" size="sm" onClick={() => onAlign("left")}>يسار</Button>
-        <Button variant="secondary" size="sm" onClick={() => onAlign("top")}>أعلى</Button>
-        <Button variant="secondary" size="sm" onClick={() => onAlign("center-y")}>منتصف</Button>
-        <Button variant="secondary" size="sm" onClick={() => onAlign("bottom")}>أسفل</Button>
-        <Button variant="secondary" size="sm" className="col-span-3" onClick={() => onDistribute("horizontal")}>توزيع أفقي</Button>
-        <Button variant="secondary" size="sm" className="col-span-3" onClick={() => onDistribute("vertical")}>توزيع عمودي</Button>
-        <Button variant="secondary" className="col-span-3" onClick={onGroup}><Group /> تجميع</Button>
+        <Button variant="secondary" size="sm" onClick={() => onAlign("right")}>
+          يمين
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => onAlign("center-x")}
+        >
+          وسط
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => onAlign("left")}>
+          يسار
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => onAlign("top")}>
+          أعلى
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => onAlign("center-y")}
+        >
+          منتصف
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => onAlign("bottom")}>
+          أسفل
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="col-span-3"
+          onClick={() => onDistribute("horizontal")}
+        >
+          توزيع أفقي
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="col-span-3"
+          onClick={() => onDistribute("vertical")}
+        >
+          توزيع عمودي
+        </Button>
+        <Button variant="secondary" className="col-span-3" onClick={onGroup}>
+          <Group /> تجميع
+        </Button>
       </div>
     </div>
   );
@@ -101,7 +147,18 @@ function LayerHeader({
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
         <h3 className="truncate font-black">{layer.name}</h3>
-        <span className="text-xs text-brand-muted">{{text: "نص", code: "كود", image: "صورة", shape: "شكل", icon: "أيقونة", group: "مجموعة"}[layer.type]}</span>
+        <span className="text-xs text-brand-muted">
+          {
+            {
+              text: "نص",
+              code: "كود",
+              image: "صورة",
+              shape: "شكل",
+              icon: "أيقونة",
+              group: "مجموعة",
+            }[layer.type]
+          }
+        </span>
       </div>
       <div className="flex gap-1">
         <Button
@@ -127,13 +184,35 @@ function LayerHeader({
   );
 }
 
-function CommonTransformProperties({ layer, patch }: { layer: Layer; patch: PatchLayer }) {
+function CommonTransformProperties({
+  layer,
+  patch,
+}: {
+  layer: Layer;
+  patch: PatchLayer;
+}) {
   return (
     <PropertiesSection title="الحجم والمظهر">
       <div className="grid grid-cols-2 gap-3">
-        <NumberField label="العرض" value={layer.width} min={1} onChange={(width) => patch({ width })} />
-        <NumberField label="الارتفاع" value={layer.height} min={1} onChange={(height) => patch({ height })} />
-        <NumberField label="الدوران" value={layer.rotation} min={-360} max={360} onChange={(rotation) => patch({ rotation })} />
+        <NumberField
+          label="العرض"
+          value={layer.width}
+          min={1}
+          onChange={(width) => patch({ width })}
+        />
+        <NumberField
+          label="الارتفاع"
+          value={layer.height}
+          min={1}
+          onChange={(height) => patch({ height })}
+        />
+        <NumberField
+          label="الدوران"
+          value={layer.rotation}
+          min={-360}
+          max={360}
+          onChange={(rotation) => patch({ rotation })}
+        />
         <div className="flex flex-col justify-end">
           <div className="flex items-center justify-between text-xs font-semibold text-stone-700">
             <span>الشفافية</span>
@@ -146,7 +225,9 @@ function CommonTransformProperties({ layer, patch }: { layer: Layer; patch: Patc
             min={0}
             max={100}
             value={Math.round(layer.opacity * 100)}
-            onChange={(event) => patch({ opacity: Number(event.target.value) / 100 })}
+            onChange={(event) =>
+              patch({ opacity: Number(event.target.value) / 100 })
+            }
           />
         </div>
       </div>
@@ -154,17 +235,35 @@ function CommonTransformProperties({ layer, patch }: { layer: Layer; patch: Patc
   );
 }
 
-function SecondaryMetadataProperties({ layer, patch }: { layer: Layer; patch: PatchLayer }) {
+function SecondaryMetadataProperties({
+  layer,
+  patch,
+}: {
+  layer: Layer;
+  patch: PatchLayer;
+}) {
   return (
     <details className="border-t border-brand-border pt-3">
       <summary className="cursor-pointer py-1 text-xs font-bold text-stone-500 hover:text-primary">
         الموقع والتسمية · متقدم
       </summary>
       <div className="mt-3 space-y-3">
-        <TextField label="اسم الطبقة" value={layer.name} onChange={(name) => patch({ name })} />
+        <TextField
+          label="اسم الطبقة"
+          value={layer.name}
+          onChange={(name) => patch({ name })}
+        />
         <div className="grid grid-cols-2 gap-3">
-          <NumberField label="X" value={layer.x} onChange={(x) => patch({ x })} />
-          <NumberField label="Y" value={layer.y} onChange={(y) => patch({ y })} />
+          <NumberField
+            label="X"
+            value={layer.x}
+            onChange={(x) => patch({ x })}
+          />
+          <NumberField
+            label="Y"
+            value={layer.y}
+            onChange={(y) => patch({ y })}
+          />
         </div>
       </div>
     </details>
@@ -184,14 +283,69 @@ function LayerActions({
 }) {
   return (
     <div className="space-y-2 border-t border-stone-200 pt-4">
-      <span className="block text-xs font-black text-stone-500">الترتيب والإجراءات</span>
+      <span className="block text-xs font-black text-stone-500">
+        الترتيب والإجراءات
+      </span>
       <div className="grid grid-cols-6 gap-1">
-        <Button variant="ghost" size="icon" aria-label="إلى المقدمة" title="إلى المقدمة" disabled={locked} onClick={() => onOrder("front")}><BringToFront /></Button>
-        <Button variant="ghost" size="icon" aria-label="للأمام خطوة" title="للأمام خطوة" disabled={locked} onClick={() => onOrder("forward")}><ArrowUp /></Button>
-        <Button variant="ghost" size="icon" aria-label="للخلف خطوة" title="للخلف خطوة" disabled={locked} onClick={() => onOrder("backward")}><ArrowDown /></Button>
-        <Button variant="ghost" size="icon" aria-label="إلى الخلف بالكامل" title="إلى الخلف بالكامل" disabled={locked} onClick={() => onOrder("back")}><SendToBack /></Button>
-        <Button variant="ghost" size="icon" aria-label="تكرار" title="تكرار العنصر" onClick={onDuplicate}><Copy /></Button>
-        <Button variant="destructive" size="icon" aria-label="حذف" title="حذف العنصر" disabled={locked} onClick={onDelete}><Trash2 /></Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="إلى المقدمة"
+          title="إلى المقدمة"
+          disabled={locked}
+          onClick={() => onOrder("front")}
+        >
+          <BringToFront />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="للأمام خطوة"
+          title="للأمام خطوة"
+          disabled={locked}
+          onClick={() => onOrder("forward")}
+        >
+          <ArrowUp />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="للخلف خطوة"
+          title="للخلف خطوة"
+          disabled={locked}
+          onClick={() => onOrder("backward")}
+        >
+          <ArrowDown />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="إلى الخلف بالكامل"
+          title="إلى الخلف بالكامل"
+          disabled={locked}
+          onClick={() => onOrder("back")}
+        >
+          <SendToBack />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="تكرار"
+          title="تكرار العنصر"
+          onClick={onDuplicate}
+        >
+          <Copy />
+        </Button>
+        <Button
+          variant="destructive"
+          size="icon"
+          aria-label="حذف"
+          title="حذف العنصر"
+          disabled={locked}
+          onClick={onDelete}
+        >
+          <Trash2 />
+        </Button>
       </div>
     </div>
   );
@@ -201,16 +355,23 @@ export function PropertiesPanel() {
   const document = useProjectDocument();
   const session = useDocumentSession();
   const { reloadAssets } = useEditorAssets();
-  const activeSlideId = useEditorUiStore((state) => state.activeSlideId) ?? document.slides[0]?.id;
+  const activeSlideId =
+    useEditorUiStore((state) => state.activeSlideId) ?? document.slides[0]?.id;
   const selectedIds = useEditorUiStore((state) => state.selectedLayerIds);
   const selectLayer = useEditorUiStore((state) => state.selectLayer);
   const clearSelection = useEditorUiStore((state) => state.clearSelection);
   const slide = document.slides.find((entry) => entry.id === activeSlideId);
-  const context = slide && selectedIds.length === 1 ? findLayerContext(slide.layers, selectedIds[0] ?? "") : null;
+  const context =
+    slide && selectedIds.length === 1
+      ? findLayerContext(slide.layers, selectedIds[0] ?? "")
+      : null;
   const layer = context?.layer ?? null;
   const isEffectivelyLocked = Boolean(layer?.locked || context?.parentLocked);
 
-  function applyOperation(operation: Parameters<typeof applySlideOperation>[2], label: string) {
+  function applyOperation(
+    operation: Parameters<typeof applySlideOperation>[2],
+    label: string,
+  ) {
     if (!slide) return;
     session.update(
       (current) => applySlideOperation(current, slide.id, operation),
@@ -220,7 +381,10 @@ export function PropertiesPanel() {
 
   const patch: PatchLayer = (patchValue, label = "تعديل خصائص العنصر") => {
     if (!slide || !layer) return;
-    applyOperation((currentSlide) => patchLayer(currentSlide, layer.id, patchValue), label);
+    applyOperation(
+      (currentSlide) => patchLayer(currentSlide, layer.id, patchValue),
+      label,
+    );
   };
 
   if (!slide || !selectedIds.length) return <EmptySelection />;
@@ -229,14 +393,24 @@ export function PropertiesPanel() {
     return (
       <MultipleSelection
         count={selectedIds.length}
-        onAlign={(mode) => applyOperation(
-          (current) => alignLayers(current, selectedIds, mode, document.framePresetId),
-          "محاذاة عناصر",
-        )}
-        onDistribute={(mode) => applyOperation(
-          (current) => distributeLayers(current, selectedIds, mode),
-          "توزيع عناصر",
-        )}
+        onAlign={(mode) =>
+          applyOperation(
+            (current) =>
+              alignLayers(
+                current,
+                selectedIds,
+                mode,
+                getFramePreset(document.framePresetId, document.customFrame),
+              ),
+            "محاذاة عناصر",
+          )
+        }
+        onDistribute={(mode) =>
+          applyOperation(
+            (current) => distributeLayers(current, selectedIds, mode),
+            "توزيع عناصر",
+          )
+        }
         onGroup={() => {
           const id = groupSelection(session, slide.id, selectedIds);
           if (id) selectLayer(id);
@@ -268,13 +442,24 @@ export function PropertiesPanel() {
         </p>
       ) : null}
 
-      <fieldset disabled={isEffectivelyLocked} className="space-y-5 disabled:opacity-60">
+      <fieldset
+        disabled={isEffectivelyLocked}
+        className="space-y-5 disabled:opacity-60"
+      >
         <CommonTransformProperties layer={layer} patch={patch} />
 
-        {layer.type === "text" ? <TextProperties layer={layer} patch={patch} /> : null}
-        {layer.type === "code" ? <CodeProperties layer={layer} patch={patch} /> : null}
-        {layer.type === "shape" ? <ShapeProperties layer={layer} patch={patch} /> : null}
-        {layer.type === "icon" ? <IconProperties layer={layer} patch={patch} /> : null}
+        {layer.type === "text" ? (
+          <TextProperties layer={layer} patch={patch} />
+        ) : null}
+        {layer.type === "code" ? (
+          <CodeProperties layer={layer} patch={patch} />
+        ) : null}
+        {layer.type === "shape" ? (
+          <ShapeProperties layer={layer} patch={patch} />
+        ) : null}
+        {layer.type === "icon" ? (
+          <IconProperties layer={layer} patch={patch} />
+        ) : null}
         {layer.type === "image" ? (
           <ImageProperties
             layer={layer}
@@ -294,7 +479,11 @@ export function PropertiesPanel() {
               });
               session.update(
                 (current) => addLayerToSlide(current, slide.id, imageLayer),
-                { label: "إضافة صورة من Unsplash", kind: "layer", affectedIds: [imageLayer.id] },
+                {
+                  label: "إضافة صورة من Unsplash",
+                  kind: "layer",
+                  affectedIds: [imageLayer.id],
+                },
               );
               selectLayer(imageLayer.id);
               await reloadAssets();
@@ -322,7 +511,9 @@ export function PropertiesPanel() {
 
       <LayerActions
         locked={isEffectivelyLocked}
-        onOrder={(action) => changeLayerOrder(session, slide.id, layer.id, action)}
+        onOrder={(action) =>
+          changeLayerOrder(session, slide.id, layer.id, action)
+        }
         onDuplicate={() => {
           const id = duplicateOneLayer(session, slide.id, layer.id);
           if (id) selectLayer(id);
