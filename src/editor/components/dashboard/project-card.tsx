@@ -12,7 +12,7 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("ar-IQ", {
 function SavedArtwork({ project }: { project: ProjectSummary }) {
   const { assetUrls } = useProjectAssets(project.id);
   return project.previewDocument ? (
-    <ArtworkPreview document={project.previewDocument} assetUrls={assetUrls} />
+    <ArtworkPreview document={project.previewDocument} assetUrls={assetUrls} totalSlides={project.slideCount} />
   ) : null;
 }
 export function ProjectCard({

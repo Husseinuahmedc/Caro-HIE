@@ -48,11 +48,12 @@ export function PlannerPanel() {
               <button
                 key={entry.id}
                 aria-current={slide.id === entry.id ? "step" : undefined}
+                aria-label={`${index + 1} ${entry.name}`}
                 onClick={() => ui.setActiveSlide(entry.id)}
-                className={`min-h-12 shrink-0 rounded-lg border px-4 py-3 text-right ${entry.id === slide.id ? "border-primary bg-brand-accent-soft font-bold" : "border-brand-border bg-surface-strong"}`}
+                className={`flex min-h-12 shrink-0 items-center gap-3 rounded-lg border px-4 py-3 text-right ${entry.id === slide.id ? "border-primary bg-brand-accent-soft font-bold" : "border-brand-border bg-surface-strong"}`}
               >
-                <span className="me-3 tabular-nums">{index + 1}</span>
-                {entry.name}
+                <span dir="ltr" className="w-6 shrink-0 text-center tabular-nums">{index + 1}</span>
+                <span dir="auto">{entry.name}</span>
               </button>
             ))}
             <Button
@@ -160,8 +161,7 @@ export function PlannerPanel() {
               />
             </div>
             <p className="mt-3 text-center text-xs text-brand-muted">
-              {document.slides.indexOf(slide) + 1} / {document.slides.length} ·
-              معاينة مباشرة
+              <span dir="ltr">{document.slides.indexOf(slide) + 1} / {document.slides.length}</span> · معاينة مباشرة
             </p>
           </aside>
         </div>

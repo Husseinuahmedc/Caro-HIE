@@ -3,6 +3,7 @@ import type { Layer, ProjectDocument, SlideDocument } from "./types";
 export function getSlidePresentationLayers(
   document: ProjectDocument,
   slide: SlideDocument,
+  totalSlides = document.slides.length,
 ): Layer[] {
   const index = document.slides.findIndex(
     (candidate) => candidate.id === slide.id,
@@ -11,7 +12,7 @@ export function getSlidePresentationLayers(
     if (layer.type === "text" && layer.contentKey === "slide-number")
       return {
         ...layer,
-        content: `${String(index + 1).padStart(2, "0")} / ${document.slides.length}`,
+        content: `${String(index + 1).padStart(2, "0")} / ${totalSlides}`,
       };
     if (layer.type === "group")
       return { ...layer, children: layer.children.map(present) };

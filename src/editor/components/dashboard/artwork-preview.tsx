@@ -13,11 +13,13 @@ export function ArtworkPreview({
   slide = document.slides[0],
   assetUrls,
   className = "",
+  totalSlides,
 }: {
   document: ProjectDocument;
   slide?: SlideDocument;
   assetUrls?: ReadonlyMap<string, string>;
   className?: string;
+  totalSlides?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -52,6 +54,7 @@ export function ArtworkPreview({
             document={document}
             slide={slide}
             assetUrls={assetUrls}
+            totalSlides={totalSlides}
           />
         </div>
       ) : null}

@@ -46,6 +46,7 @@ export function ProjectDashboard({
               visualFamilyId: family.id,
               framePresetId: "portrait",
               slideCount: 3,
+              exampleContent: true,
             },
           ),
         ]),

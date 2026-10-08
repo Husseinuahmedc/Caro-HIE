@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import { FRAME_PRESETS, type FramePresetId } from "@/core/document";
 import {
   createDocumentFromTemplate,
   listTemplates,
+  getTemplate,
   getVisualFamily,
 } from "@/core/templates";
 import { Button, Input, Label, Select } from "@/shared/ui";
@@ -45,19 +46,29 @@ export function NewProjectForm({
     ),
     [framePresetId, setFrame] = useState<FramePresetId>("portrait"),
     [slideCount, setCount] = useState(visualFamilyId ? "6" : "1"),
+    [countEdited, setCountEdited] = useState(false),
     [width, setWidth] = useState(1080),
     [height, setHeight] = useState(1350),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const family = getVisualFamily(visualFamilyId);
-  const preview = createDocumentFromTemplate(templateId, {
-    visualFamilyId,
-    framePresetId,
-    ...(framePresetId === "custom"
-      ? { customFrame: { width: Math.min(8192, Math.max(64, width || 64)), height: Math.min(8192, Math.max(64, height || 64)) } }
-      : {}),
-    slideCount: 3,
-  });
+  const validCount = Number(slideCount);
+  const previewCount = Number.isSafeInteger(validCount) && validCount > 0 ? validCount : 1;
+  // Render one cover even for very large counts; numbering reflects the chosen total.
+  const preview = useMemo(
+    () => createDocumentFromTemplate(templateId, {
+      visualFamilyId,
+      framePresetId,
+      ...(framePresetId === "custom"
+        ? { customFrame: {
+            width: Math.min(8192, Math.max(64, Math.round(width) || 64)),
+            height: Math.min(8192, Math.max(64, Math.round(height) || 64)),
+          } }
+        : {}),
+      slideCount: 1,
+    }),
+    [templateId, visualFamilyId, framePresetId, width, height],
+  );
   return (
     <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-16">
       <form
@@ -70,8 +81,8 @@ export function NewProjectForm({
             visualFamilyId,
             framePresetId,
             slideCount: Number(slideCount),
-            width,
-            height,
+            width: framePresetId === "custom" ? width : 1080,
+            height: framePresetId === "custom" ? height : 1350,
           });
           if (!parsed.success) {
             setError(parsed.error.issues[0]?.message ?? "راجع بيانات المشروع.");
@@ -159,7 +170,10 @@ export function NewProjectForm({
             min={1}
             step={1}
             value={slideCount}
-            onChange={(event) => setCount(event.target.value)}
+            onChange={(event) => {
+              setCount(event.target.value);
+              setCountEdited(true);
+            }}
             dir="ltr"
           />
           <p className="mt-2 text-sm text-brand-muted">
@@ -171,8 +185,13 @@ export function NewProjectForm({
           <Label htmlFor="content-outline">بنية المحتوى</Label>
           <Select
             id="content-outline"
+            aria-describedby="content-outline-help"
             value={templateId}
-            onChange={(event) => setTemplateId(event.target.value)}
+            onChange={(event) => {
+              const id = event.target.value;
+              setTemplateId(id);
+              if (!countEdited) setCount(String(getTemplate(id).roles.length));
+            }}
           >
             <option value="blank">بدون محتوى — تصميم فارغ</option>
             {listTemplates().map((template) => (
@@ -181,8 +200,9 @@ export function NewProjectForm({
               </option>
             ))}
           </Select>
-          <p className="mt-2 text-sm text-brand-muted">
+          <p id="content-outline-help" className="mt-2 text-sm text-brand-muted">
             البنية ترتّب أفكارك؛ القالب يحدد شكلها.
+            {" "}{getTemplate(templateId).description}
           </p>
         </div>
         {error ? (
@@ -200,10 +220,10 @@ export function NewProjectForm({
       </form>
       <aside className="bg-[#E9ECE5] p-6 sm:p-8">
         <div className="mx-auto max-w-[380px]">
-          <ArtworkPreview document={preview} />
+          <ArtworkPreview document={preview} totalSlides={previewCount} />
         </div>
         <p className="mt-4 text-center text-sm text-brand-muted">
-          مثال قابل للتعديل · النصوص للمعاينة
+          معاينة الغلاف · عدد الشرائح: {previewCount} · النصوص قابلة للتعديل
         </p>
       </aside>
     </div>
