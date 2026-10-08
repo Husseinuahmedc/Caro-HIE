@@ -15,6 +15,7 @@ interface SlideRendererProps {
   assetUrls?: ReadonlyMap<string, string>;
   className?: string;
   editingLayerId?: string | null;
+  totalSlides?: number;
 }
 
 const EMPTY_ASSET_URLS: ReadonlyMap<string, string> = new Map();
@@ -25,6 +26,7 @@ function SlideRendererComponent({
   assetUrls = EMPTY_ASSET_URLS,
   className,
   editingLayerId,
+  totalSlides,
 }: SlideRendererProps) {
   const frame = getFramePreset(document.framePresetId, document.customFrame);
   return (
@@ -41,7 +43,7 @@ function SlideRendererComponent({
         color: document.brand.colors.text,
       }}
     >
-      {getSlidePresentationLayers(document, slide).map((layer) => (
+      {getSlidePresentationLayers(document, slide, totalSlides).map((layer) => (
         <LayerRenderer
           key={layer.id}
           layer={layer}
@@ -63,5 +65,6 @@ export const SlideRenderer = memo(
     previous.document.brand === next.document.brand &&
     previous.document.customFrame === next.document.customFrame &&
     previous.className === next.className &&
-    previous.editingLayerId === next.editingLayerId,
+    previous.editingLayerId === next.editingLayerId &&
+    previous.totalSlides === next.totalSlides,
 );

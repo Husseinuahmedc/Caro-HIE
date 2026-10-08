@@ -14,7 +14,7 @@ import {
   getFamilyContentDefaults,
 } from "./visual-families";
 import type { TemplateRole } from "./template-definition";
-import { getRoleContentDefaults } from "./content-defaults";
+import { getTemplateContentDefaults } from "./content-defaults";
 import { getTemplate } from "./registry";
 import { createSlideFromTemplateRole } from "./role-layouts";
 
@@ -27,6 +27,8 @@ export interface CreateProjectFromTemplateOptions {
   slideCount?: number;
   visualFamilyId?: string;
   customFrame?: { width: number; height: number };
+  /** Gallery samples only; project content always comes from its outline. */
+  exampleContent?: boolean;
 }
 
 export function createDocumentFromTemplate(
@@ -55,63 +57,34 @@ export function createDocumentFromTemplate(
                 ? template.roles.at(-1)!
                 : (middle[(index - 1) % Math.max(1, middle.length)] ??
                   template.roles[0]!);
-          return {
-            ...original,
-            id:
-              index === 0 || index === count - 1
-                ? original.id
-                : `${original.id}-${index}`,
-            label:
-              index === 0 || index === count - 1
-                ? original.label
-                : `${original.label} ${index}`,
-          };
+          return original;
         });
   const framePresetId = options.framePresetId ?? "square";
   const frame = getFramePreset(framePresetId, options.customFrame);
   const isBlank = templateId === "blank";
-  const plan: ContentPlan = isBlank
-    ? {
-        goal: "تصميم حر",
-        audience: "الجمهور",
-        hook: "",
-        tone: "مباشر",
-        slides: [
-          {
-            id: "blank-slide",
-            role: "custom",
-            label: "شريحة 1",
-            hint: "شريحة فارغة",
-            title: "",
-            body: "",
-          },
-        ],
-      }
-    : {
-        goal: "شرح الفكرة بدون حشو",
-        audience: "صنّاع المحتوى والمطورون العرب",
-        hook: "ماذا يحدث فعلياً؟",
-        tone: "واضح ومباشر",
-        slides: roles.map((role, index) => ({
-          id: role.id,
-          role: role.id,
-          label: role.label,
-          hint: role.hint,
-          ...getRoleContentDefaults(
-            template.roles.find((candidate) => candidate.id === role.id)?.id ??
-              role.id.replace(/-\d+$/, ""),
-            index,
-          ),
-        })),
-      };
-  const roleContent = (role: TemplateRole, index: number) =>
-    options.visualFamilyId
+  const contents = roles.map((role, index) => {
+    if (isBlank) return { title: "", body: "" };
+    const content = options.exampleContent && options.visualFamilyId
       ? getFamilyContentDefaults(options.visualFamilyId, role)
-      : getRoleContentDefaults(
-          template.roles.find((candidate) => candidate.id === role.id)?.id ??
-            role.id.replace(/-\d+$/, ""),
-          index,
-        );
+      : getTemplateContentDefaults(template.id, role.id, index);
+    // The developer composition has a code region on each slide.
+    if (options.visualFamilyId === "developer" && content.code === undefined)
+      content.code = "const data =\n  await fetchData();\nconsole.log(data);";
+    return content;
+  });
+  const plan: ContentPlan = {
+    goal: isBlank ? "تصميم حر" : "شرح الفكرة بدون حشو",
+    audience: isBlank ? "الجمهور" : "صنّاع المحتوى والمطورون العرب",
+    hook: isBlank ? "" : contents[0]!.title,
+    tone: "واضح ومباشر",
+    slides: roles.map((role, index) => ({
+      id: role.id,
+      role: isBlank ? "custom" : role.id,
+      label: isBlank ? `شريحة ${index + 1}` : role.label,
+      hint: role.hint,
+      ...contents[index]!,
+    })),
+  };
   const now = new Date().toISOString();
   const result: ProjectDocument = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -138,7 +111,7 @@ export function createDocumentFromTemplate(
             ? createFamilySlide(
                 options.visualFamilyId,
                 role,
-                roleContent(role, index),
+                contents[index]!,
                 brand,
                 frame,
                 index,
@@ -146,11 +119,7 @@ export function createDocumentFromTemplate(
               )
             : createSlideFromTemplateRole({
                 role,
-                content: getRoleContentDefaults(
-                  template.roles.find((candidate) => candidate.id === role.id)
-                    ?.id ?? role.id.replace(/-\d+$/, ""),
-                  index,
-                ),
+                content: contents[index]!,
                 brand,
                 frame,
               }),
